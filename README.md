@@ -73,7 +73,7 @@ chmod +x biblia
 
 ### Passo 1: Baixar as versões
 
-O aplicativo não vem com versões bíblicas. Você precisa baixar separadamente.
+O aplicativo não vem com versões bíblicas. Você precisa baixar separadamente. Veja as opções abaixo, incluindo download direto do nosso repositório.
 
 #### Opção 1: Bible SuperSearch (Recomendado)
 
@@ -96,6 +96,47 @@ O aplicativo não vem com versões bíblicas. Você precisa baixar separadamente
 3. Exporte a versão desejada
 4. Salve como arquivo .spb
 
+#### Opção 4: Repositório oficial (Direto do GitHub)
+
+Disponibilizamos versões prontas no repositório [biblias](https://github.com/elizeubarbosaabreu/biblias/tree/main/inst/sql). Não é necessário criar conta no GitHub para baixar.
+
+**Versões disponíveis:**
+
+| Versão | Descrição |
+|--------|-----------|
+| ACF | Almeida Corrigida Fiel |
+| ARA | Almeida Revisada Atualizada |
+| ARC | Almeida Revisada Corrigida |
+| AS21 | Nova Tradução do Mundo (AS21) |
+| JFAA | João Ferreira de Almeida Atualizada |
+| KJA | King James Atualizada |
+| KJF | King James Ferreira de Almeida |
+| NAA | Nova Almeida Atualizada |
+| NBV | Nova Bíblia Viva |
+| NTLH | Nova Tradução na Linguagem de Hoje |
+| NVI | Nova Versão Internacional |
+| NVT | Nova Versão Tradução |
+| TB | Tradução Brasileira |
+
+**Como baixar:**
+
+1. Acesse: https://github.com/elizeubarbosaabreu/biblias/tree/main/inst/sql
+2. Clique na versão desejada (ex: `NVI.sqlite`)
+3. Clique no ícone de **download** (seta para baixo) ou clique em **"Raw"**
+4. Salve o arquivo `.sqlite` no seu computador
+
+**Ou baixe diretamente via terminal:**
+
+```bash
+# Exemplo: baixar a versão NVI
+wget https://github.com/elizeubarbosaabreu/biblias/raw/main/inst/sql/NVI.sqlite
+
+# Exemplo: baixar a versão ARA
+wget https://github.com/elizeubarbosaabreu/biblias/raw/main/inst/sql/ARA.sqlite
+```
+
+> **Nota:** Estes arquivos são formatados no padrão **SQLite3**, compatível com o aplicativo.
+
 ### Passo 2: Importar no aplicativo
 
 1. Abra o aplicativo Bíblia Sagrada
@@ -114,14 +155,23 @@ O aplicativo não vem com versões bíblicas. Você precisa baixar separadamente
 
 ## Versões Populares em Português
 
+Todas as versões abaixo estão disponíveis para download direto do repositório [biblias/inst/sql](https://github.com/elizeubarbosaabreu/biblias/tree/main/inst/sql), além do [Bible SuperSearch](https://biblesupersearch.com/download).
+
 | Versão | Formato | Descrição | Onde baixar |
 |--------|---------|-----------|-------------|
-| **ARA** | SPB | Almeida Revisada Atualizada | [Bible SuperSearch](https://biblesupersearch.com/download) |
-| **ACF** | SPB | Almeida Corrigida Fiel | [Bible SuperSearch](https://biblesupersearch.com/download) |
-| **NVI** | SQLite3 | Nova Versão Internacional | [Bible SuperSearch](https://biblesupersearch.com/download) |
-| **CNBB** | SQLite3 | Bíblia CNBB (Nova Capa) | [Bible SuperSearch](https://biblesupersearch.com/download) |
-| **NTLH** | SQLite3 | Nova Tradução na Linguagem de Hoje | [Bible SuperSearch](https://biblesupersearch.com/download) |
-| **KJV** | SPB | King James Version (inglês) | [Bible SuperSearch](https://biblesupersearch.com/download) |
+| **ARA** | SQLite3 | Almeida Revisada Atualizada | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/ARA.sqlite) · [Bible SuperSearch](https://biblesupersearch.com/download) |
+| **ACF** | SQLite3 | Almeida Corrigida Fiel | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/ACF.sqlite) · [Bible SuperSearch](https://biblesupersearch.com/download) |
+| **ARC** | SQLite3 | Almeida Revisada Corrigida | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/ARC.sqlite) |
+| **NVI** | SQLite3 | Nova Versão Internacional | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/NVI.sqlite) · [Bible SuperSearch](https://biblesupersearch.com/download) |
+| **NTLH** | SQLite3 | Nova Tradução na Linguagem de Hoje | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/NTLH.sqlite) · [Bible SuperSearch](https://biblesupersearch.com/download) |
+| **NAA** | SQLite3 | Nova Almeida Atualizada | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/NAA.sqlite) |
+| **NVT** | SQLite3 | Nova Versão Tradução | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/NVT.sqlite) |
+| **NBV** | SQLite3 | Nova Bíblia Viva | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/NBV.sqlite) |
+| **KJA** | SQLite3 | King James Atualizada | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/KJA.sqlite) |
+| **KJF** | SQLite3 | King James Ferreira de Almeida | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/KJF.sqlite) |
+| **JFAA** | SQLite3 | João Ferreira de Almeida Atualizada | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/JFAA.sqlite) |
+| **AS21** | SQLite3 | Nova Tradução do Mundo (AS21) | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/AS21.sqlite) |
+| **TB** | SQLite3 | Tradução Brasileira | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/TB.sqlite) |
 
 ---
 
