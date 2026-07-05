@@ -920,7 +920,6 @@ class BibleReader(QMainWindow):
         msg.setWindowTitle("Ajuda - Como Baixar Versoes")
         msg.setTextFormat(Qt.RichText)
         msg.setText(help_text)
-        msg.setOpenExternalLinks(True)
         msg.exec_()
 
     def _show_about(self):
