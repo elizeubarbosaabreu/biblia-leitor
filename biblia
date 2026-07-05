@@ -86,7 +86,7 @@ class BibleLoader:
             return
 
         for file_path in BIBLE_DATA_DIR.iterdir():
-            if file_path.suffix == '.SQLite3':
+            if file_path.suffix.lower() in ('.sqlite3', '.sqlite', '.db'):
                 name = file_path.stem
                 self.versions[name] = {'type': 'sqlite', 'path': file_path}
             elif file_path.suffix == '.spb':
@@ -163,6 +163,54 @@ class BibleLoader:
         conn = sqlite3.connect(str(path))
         cursor = conn.cursor()
 
+        # Detectar esquema: OpenLP (metadata/book/verse) ou antigo (info/books/verses)
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = {row[0] for row in cursor.fetchall()}
+
+        if 'metadata' in tables and 'book' in tables and 'verse' in tables:
+            return self._load_sqlite_openlp(cursor, conn)
+        elif 'info' in tables and 'books' in tables and 'verses' in tables:
+            return self._load_sqlite_legacy(cursor, conn)
+        else:
+            conn.close()
+            return None
+
+    def _load_sqlite_openlp(self, cursor, conn):
+        cursor.execute("SELECT value FROM metadata WHERE key='name'")
+        row = cursor.fetchone()
+        name = row[0] if row else "Desconhecida"
+
+        cursor.execute("SELECT id, name FROM book")
+        books_raw = cursor.fetchall()
+
+        books = {}
+        for book_id, book_name in books_raw:
+            books[book_id] = {
+                'id': book_id,
+                'abbr': BOOK_ABBR_PT.get(book_id, f"Lv{book_id}"),
+                'name': book_name if book_name else BOOK_NAMES_PT.get(book_id, f'Livro {book_id}'),
+                'color': '#000000'
+            }
+
+        cursor.execute("SELECT book_id, chapter, verse, text FROM verse")
+        verses_raw = cursor.fetchall()
+
+        verses = {}
+        for book_id, chapter, verse, text in verses_raw:
+            key = (book_id, chapter)
+            if key not in verses:
+                verses[key] = {}
+            verses[key][verse] = text
+
+        conn.close()
+
+        return {
+            'name': name,
+            'books': books,
+            'verses': verses
+        }
+
+    def _load_sqlite_legacy(self, cursor, conn):
         cursor.execute("SELECT * FROM info")
         info = dict(cursor.fetchall())
 
@@ -860,27 +908,25 @@ class BibleReader(QMainWindow):
         <h3>Passo 1: Baixar as versoes</h3>
         <p>O aplicativo nao vem com versoes biblicas. Voce precisa baixar separadamente.</p>
         
-        <h3>Opcao 1: Bible SuperSearch (Recomendado)</h3>
+        <h3>Repositorio Oficial de Versoes (Recomendado)</h3>
         <ol>
-        <li>Acesse: <a href="https://biblesupersearch.com/download">biblesupersearch.com/download</a></li>
-        <li>Clique em "Download" na versao desejada</li>
-        <li>Escolha o formato <b>SQLite3</b></li>
+        <li>Acesse: <a href="https://github.com/elizeubarbosaabreu/biblias">github.com/elizeubarbosaabreu/biblias</a></li>
+        <li>Clique na versao desejada (ARA, ACF, NVI, etc.)</li>
+        <li>Clique em <b>Download</b> ou <b>Raw</b> para baixar o arquivo .sqlite</li>
         <li>Salve o arquivo no seu computador</li>
         </ol>
         
-        <h3>Opcao 2: The SWORD Project</h3>
-        <ol>
-        <li>Acesse: <a href="https://www.crosswire.org/sword/modules/ModDisp.jsp?modType=Bibles">crosswire.org</a></li>
-        <li>Procure versoes em portugues</li>
-        <li>Baixe o arquivo ZIP</li>
-        <li>Extraia o conteudo</li>
-        </ol>
+        <h3>Outras Fontes</h3>
+        <ul>
+        <li><a href="https://biblesupersearch.com/download">Bible SuperSearch</a> - Escolha formato SQLite3</li>
+        <li><a href="https://www.crosswire.org/sword/modules/ModDisp.jsp?modType=Bibles">The SWORD Project</a> - Formato .spb</li>
+        </ul>
         
         <h3>Passo 2: Importar no aplicativo</h3>
         <ol>
         <li>Abra o aplicativo Biblia Sagrada</li>
         <li>Va no menu <b>Arquivo > Importar Versao</b> (ou pressione Ctrl+I)</li>
-        <li>Navegue ate o arquivo baixado (.SQLite3 ou .spb)</li>
+        <li>Navegue ate o arquivo baixado (.sqlite, .SQLite3 ou .spb)</li>
         <li>Selecione o arquivo e clique em "Abrir"</li>
         <li>A versao sera importada automaticamente</li>
         </ol>
@@ -892,18 +938,27 @@ class BibleReader(QMainWindow):
         <li>Pronto! Agora voce pode ler a Biblia</li>
         </ol>
         
-        <h3>Versoes Populares</h3>
+        <h3>Versoes Disponiveis</h3>
+        <p>No repositorio oficial voce encontra:</p>
         <ul>
         <li><b>ARA</b> - Almeida Revisada Atualizada</li>
         <li><b>ACF</b> - Almeida Corrigida Fiel</li>
-        <li><b>NVI</b> - Nova Versao Internacional</li>
-        <li><b>CNBB</b> - Biblia CNBB</li>
+        <li><b>ARC</b> - Almeida Revisada Corrigida</li>
+        <li><b>AS21</b> - Atualizada Segundo a 21a Edicao</li>
+        <li><b>JFAA</b> - Joao Ferreira de Almeida Atualizada</li>
+        <li><b>KJA</b> - King James Atualizada</li>
+        <li><b>KJF</b> - King James Fiel</li>
+        <li><b>NAA</b> - Nova Almeida Atualizada</li>
+        <li><b>NBV</b> - Nova Biblia Viva</li>
         <li><b>NTLH</b> - Nova Traducao na Linguagem de Hoje</li>
+        <li><b>NVI</b> - Nova Versao Internacional</li>
+        <li><b>NVT</b> - Nova Versao Traduzida</li>
+        <li><b>TB</b> - Traducao de Brasilia</li>
         </ul>
         
         <h3>Formatos Suportados</h3>
         <ul>
-        <li><b>.SQLite3</b> - Formato padrao</li>
+        <li><b>.sqlite</b> / <b>.SQLite3</b> - Formato padrao (recomendado)</li>
         <li><b>.spb</b> - Formato The SWORD Project</li>
         </ul>
         
@@ -913,7 +968,6 @@ class BibleReader(QMainWindow):
         msg.setWindowTitle("Ajuda - Como Baixar Versoes")
         msg.setTextFormat(Qt.RichText)
         msg.setText(help_text)
-        msg.setOpenExternalLinks(True)
         msg.exec_()
 
     def _show_about(self):
