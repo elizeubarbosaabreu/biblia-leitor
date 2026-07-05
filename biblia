@@ -3,6 +3,9 @@
 """
 Bíblia - Leitor de Bíblia com interface de livro
 Suporta versões SQLite3 e SPB
+
+Desenvolvido por: Elizeu Barbosa
+Site: www.elizebarbosa.com.br
 """
 
 import sys
@@ -17,7 +20,7 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QLabel, QComboBox, QScrollArea, QTextEdit,
     QMessageBox, QSplitter, QFrame, QFontComboBox, QSpinBox,
-    QFileDialog
+    QFileDialog, QAction, QMenuBar, QMenu, QToolBar, QStatusBar
 )
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QFont, QColor, QTextCharFormat, QTextCursor, QIcon
@@ -49,6 +52,23 @@ BOOK_NAMES_PT = {
     53: "2 Tessalonicenses", 54: "1 Timóteo", 55: "2 Timóteo", 56: "Tito",
     57: "Filemom", 58: "Hebreus", 59: "Tiago", 60: "1 Pedro", 61: "2 Pedro",
     62: "1 João", 63: "2 João", 64: "3 João", 65: "Judas", 66: "Apocalipse"
+}
+
+# Abreviações dos livros
+BOOK_ABBR_PT = {
+    1: "Gn", 2: "Ex", 3: "Lv", 4: "Nm", 5: "Dt",
+    6: "Js", 7: "Jz", 8: "Rt", 9: "1Sm", 10: "2Sm",
+    11: "1Rs", 12: "2Rs", 13: "1Cr", 14: "2Cr", 15: "Ed",
+    16: "Ne", 17: "Et", 18: "Jó", 19: "Sl", 20: "Pv",
+    21: "Ec", 22: "Ct", 23: "Is", 24: "Jr", 25: "Lm",
+    26: "Ez", 27: "Dn", 28: "Os", 29: "Jl", 30: "Am",
+    31: "Ob", 32: "Jn", 33: "Mq", 34: "Na", 35: "Hc",
+    36: "Sf", 37: "Ag", 38: "Zc", 39: "Ml", 40: "Mt",
+    41: "Mc", 42: "Lc", 43: "Jo", 44: "At", 45: "Rm",
+    46: "1Co", 47: "2Co", 48: "Gl", 49: "Ef", 50: "Fp",
+    51: "Cl", 52: "1Ts", 53: "2Ts", 54: "1Tm", 55: "2Tm",
+    56: "Tt", 57: "Fm", 58: "Hb", 59: "Tg", 60: "1Pe",
+    61: "2Pe", 62: "1Jo", 63: "2Jo", 64: "3Jo", 65: "Jd", 66: "Ap"
 }
 
 
@@ -99,6 +119,30 @@ class BibleLoader:
         shutil.copy2(source, dest_path)
         self.reload_versions()
         return True, f"Importada: {dest_name}"
+
+    def delete_version(self, version_name):
+        if version_name not in self.versions:
+            return False, "Versão não encontrada"
+
+        version_path = self.versions[version_name]['path']
+
+        reply = QMessageBox.question(
+            None,
+            "Confirmar exclusão",
+            f"Tem certeza que deseja excluir a versão '{version_name}'?\n\nArquivo: {version_path}",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+
+        if reply == QMessageBox.Yes:
+            try:
+                version_path.unlink()
+                self.reload_versions()
+                return True, f"Versão '{version_name}' excluída"
+            except Exception as e:
+                return False, f"Erro ao excluir: {e}"
+        else:
+            return False, "Exclusão cancelada"
 
     def get_version_names(self):
         return sorted(self.versions.keys())
@@ -297,6 +341,9 @@ class BibleReader(QMainWindow):
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
 
+        # Menu bar
+        self._create_menu_bar()
+
         # Barra superior
         top_bar = QHBoxLayout()
 
@@ -306,12 +353,6 @@ class BibleReader(QMainWindow):
         self.version_combo.setMinimumWidth(200)
         self.version_combo.currentTextChanged.connect(self._on_version_changed)
         top_bar.addWidget(self.version_combo)
-
-        # Botão importar
-        import_btn = QPushButton("📥 Importar")
-        import_btn.setStyleSheet("background-color: #4682B4; color: white; padding: 5px 10px;")
-        import_btn.clicked.connect(self._import_version)
-        top_bar.addWidget(import_btn)
 
         # Livro
         top_bar.addWidget(QLabel("Livro:"))
@@ -366,12 +407,6 @@ class BibleReader(QMainWindow):
         clear_btn.setStyleSheet("background-color: #FF6666; color: white; padding: 5px;")
         clear_btn.clicked.connect(self._clear_highlight)
         toolbar.addWidget(clear_btn)
-
-        # Botão copiar
-        copy_btn = QPushButton("📋 Copiar Versículo")
-        copy_btn.setStyleSheet("background-color: #4682B4; color: white; padding: 5px;")
-        copy_btn.clicked.connect(self._copy_with_reference)
-        toolbar.addWidget(copy_btn)
 
         main_layout.addLayout(toolbar)
 
@@ -441,6 +476,57 @@ class BibleReader(QMainWindow):
 
         main_layout.addLayout(bottom_bar)
 
+        # Status bar
+        self.statusBar().showMessage("Pronto")
+
+    def _create_menu_bar(self):
+        menubar = self.menuBar()
+
+        # Menu Arquivo
+        file_menu = menubar.addMenu("&Arquivo")
+
+        # Importar versão
+        import_action = QAction("📥 Importar Versão...", self)
+        import_action.setShortcut("Ctrl+I")
+        import_action.triggered.connect(self._import_version)
+        file_menu.addAction(import_action)
+
+        # Excluir versão
+        delete_action = QAction("🗑️ Excluir Versão...", self)
+        delete_action.setShortcut("Delete")
+        delete_action.triggered.connect(self._delete_version)
+        file_menu.addAction(delete_action)
+
+        file_menu.addSeparator()
+
+        # Sair
+        exit_action = QAction("🚪 Sair", self)
+        exit_action.setShortcut("Ctrl+Q")
+        exit_action.triggered.connect(self.close)
+        file_menu.addAction(exit_action)
+
+        # Menu Editar
+        edit_menu = menubar.addMenu("&Editar")
+
+        # Copiar versículo
+        copy_verse_action = QAction("📋 Copiar Versículo", self)
+        copy_verse_action.setShortcut("Ctrl+C")
+        copy_verse_action.triggered.connect(self._copy_verse_citation)
+        edit_menu.addAction(copy_verse_action)
+
+        # Copiar capítulo
+        copy_chapter_action = QAction("📄 Copiar Capítulo", self)
+        copy_chapter_action.setShortcut("Ctrl+Shift+C")
+        copy_chapter_action.triggered.connect(self._copy_chapter)
+        edit_menu.addAction(copy_chapter_action)
+
+        # Menu Ajuda
+        help_menu = menubar.addMenu("&Ajuda")
+
+        about_action = QAction("ℹ️ Sobre", self)
+        about_action.triggered.connect(self._show_about)
+        help_menu.addAction(about_action)
+
     def _load_versions(self):
         names = self.loader.get_version_names()
         self.version_combo.addItems(names)
@@ -459,9 +545,24 @@ class BibleReader(QMainWindow):
                 if success:
                     self.version_combo.clear()
                     self._load_versions()
+                    self.statusBar().showMessage(message, 3000)
                     QMessageBox.information(self, "Sucesso", message)
                 else:
                     QMessageBox.warning(self, "Erro", message)
+
+    def _delete_version(self):
+        if not self.current_version:
+            QMessageBox.warning(self, "Aviso", "Nenhuma versão selecionada")
+            return
+
+        success, message = self.loader.delete_version(self.current_version)
+        if success:
+            self.version_combo.clear()
+            self._load_versions()
+            self.statusBar().showMessage(message, 3000)
+            QMessageBox.information(self, "Sucesso", message)
+        elif "cancelada" not in message:
+            QMessageBox.warning(self, "Erro", message)
 
     def _on_version_changed(self, version_name):
         if not version_name:
@@ -471,6 +572,7 @@ class BibleReader(QMainWindow):
         if self.current_data:
             self._populate_books()
             self._display_chapter()
+            self.statusBar().showMessage(f"Versão: {version_name}", 3000)
 
     def _populate_books(self):
         self.book_combo.clear()
@@ -617,8 +719,26 @@ class BibleReader(QMainWindow):
         )
         self._display_chapter()
 
-    def _copy_with_reference(self):
-        """Copia o versículo atual com referência"""
+    def _get_verse_abbr(self, book_num):
+        """Retorna abreviação do livro"""
+        return BOOK_ABBR_PT.get(book_num, f"Lv{book_num}")
+
+    def _get_version_short_name(self):
+        """Retorna nome curto da versão"""
+        version_names = {
+            'Portuguese_(Almeida_Corrigida)': 'ACF',
+            'Portuguese_AlmeidaAtualizada': 'ARA',
+            'PorAR': 'ARA',
+            'PorCapNT': 'NVI',
+            'PorLivre': 'Livre',
+            'NTLH': 'NTLH',
+            'CNBB': 'CNBB',
+            'JFA+': 'JFA+',
+        }
+        return version_names.get(self.current_version, self.current_version)
+
+    def _copy_verse_citation(self):
+        """Copia o versículo no formato de citação"""
         if not self.current_data or not self.current_book:
             return
 
@@ -635,13 +755,46 @@ class BibleReader(QMainWindow):
         ).get('name', BOOK_NAMES_PT.get(self.current_book, ''))
 
         verse_text = self._clean_text(chapter_verses[self.current_verse])
+        abbr = self._get_verse_abbr(self.current_book)
+        version = self._get_version_short_name()
+
+        # Formato: "'Texto' (Abbr. Cap:V, Versão)"
+        citation = f"'{verse_text}' ({abbr}. {self.current_chapter}:{self.current_verse}, {version})"
+
+        clipboard = QApplication.clipboard()
+        clipboard.setText(citation)
+
         reference = f"{book_name} {self.current_chapter}:{self.current_verse}"
-        full_text = f"{reference} - {verse_text}"
+        self.statusBar().showMessage(f"Copiado: {reference}", 3000)
+
+    def _copy_chapter(self):
+        """Copia todos os versículos do capítulo"""
+        if not self.current_data or not self.current_book:
+            return
+
+        key = (self.current_book, self.current_chapter)
+        if key not in self.current_data['verses']:
+            return
+
+        chapter_verses = self.current_data['verses'][key]
+        book_name = self.current_data['books'].get(
+            self.current_book, {}
+        ).get('name', BOOK_NAMES_PT.get(self.current_book, ''))
+        abbr = self._get_verse_abbr(self.current_book)
+        version = self._get_version_short_name()
+
+        lines = [f"{book_name} {self.current_chapter} ({version})\n"]
+
+        for verse_num in sorted(chapter_verses.keys()):
+            text = self._clean_text(chapter_verses[verse_num])
+            lines.append(f"{verse_num} {text}")
+
+        full_text = "\n".join(lines)
 
         clipboard = QApplication.clipboard()
         clipboard.setText(full_text)
 
-        self.position_label.setText(f"Copiado: {reference}")
+        self.statusBar().showMessage(f"Capítulo copiado: {book_name} {self.current_chapter}", 3000)
 
     def _prev_chapter(self):
         if self.current_chapter > 1:
@@ -668,6 +821,33 @@ class BibleReader(QMainWindow):
                 self.chapter_spin.setValue(self.current_chapter + 1)
                 self.verse_spin.setValue(1)
 
+    def _show_about(self):
+        """Mostra janela Sobre"""
+        about_text = """
+        <h2>Bíblia Sagrada</h2>
+        <p><b>Leitor de Bíblia com interface de livro</b></p>
+        <p>Versão: 2.0</p>
+        <hr>
+        <p><b>Desenvolvido por:</b><br>
+        Elizeu Barbosa</p>
+        <p><b>Site:</b><br>
+        <a href="https://www.elizebarbosa.com.br">www.elizebarbosa.com.br</a></p>
+        <hr>
+        <p><b>Funcionalidades:</b></p>
+        <ul>
+        <li>Interface estilo livro</li>
+        <li>Múltiplas versões bíblicas</li>
+        <li>Marcações coloridas</li>
+        <li>Citação de versículos</li>
+        <li>Suporte a SQLite3 e SPB</li>
+        </ul>
+        <hr>
+        <p><i>"Lâmpada para os meus pés é tua palavra,<br>
+        e luz para o meu caminho."</i><br>
+        <b>Salmos 119:105</b></p>
+        """
+        QMessageBox.about(self, "Sobre - Bíblia Sagrada", about_text)
+
 
 def main():
     app = QApplication(sys.argv)
@@ -693,6 +873,26 @@ def main():
         }
         QLabel {
             font-size: 14px;
+            color: #333;
+        }
+        QMenuBar {
+            background-color: #DEB887;
+            color: #333;
+        }
+        QMenuBar::item:selected {
+            background-color: #D2691E;
+            color: white;
+        }
+        QMenu {
+            background-color: #FFF8DC;
+            border: 1px solid #8B4513;
+        }
+        QMenu::item:selected {
+            background-color: #D2691E;
+            color: white;
+        }
+        QStatusBar {
+            background-color: #DEB887;
             color: #333;
         }
     """)
