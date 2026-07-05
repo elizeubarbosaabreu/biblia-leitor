@@ -744,11 +744,18 @@ class BibleReader(QMainWindow):
         return version_names.get(self.current_version, self.current_version)
 
     def _copy_selection(self):
-        """Copia o texto selecionado"""
+        """Copia o texto selecionado com referência"""
         cursor = self.text_display.textCursor()
         selected_text = cursor.selectedText()
 
-        if selected_text:
+        if selected_text and self.current_data and self.current_book:
+            abbr = self._get_verse_abbr(self.current_book)
+            version = self._get_version_short_name()
+            citation = f"'{selected_text}' ({abbr}. {self.current_chapter}, {version})"
+            clipboard = QApplication.clipboard()
+            clipboard.setText(citation)
+            self.statusBar().showMessage("Selecao copiada com referencia", 3000)
+        elif selected_text:
             clipboard = QApplication.clipboard()
             clipboard.setText(selected_text)
             self.statusBar().showMessage("Selecao copiada", 3000)
@@ -795,24 +802,22 @@ class BibleReader(QMainWindow):
             return
 
         chapter_verses = self.current_data['verses'][key]
-        book_name = self.current_data['books'].get(
-            self.current_book, {}
-        ).get('name', BOOK_NAMES_PT.get(self.current_book, ''))
         abbr = self._get_verse_abbr(self.current_book)
         version = self._get_version_short_name()
 
-        lines = [f"{book_name} {self.current_chapter} ({version})\n"]
+        lines = []
 
         for verse_num in sorted(chapter_verses.keys()):
             text = self._clean_text(chapter_verses[verse_num])
-            lines.append(f"{verse_num} {text}")
+            citation = f"'{text}' ({abbr}. {self.current_chapter}:{verse_num}, {version})"
+            lines.append(citation)
 
         full_text = "\n".join(lines)
 
         clipboard = QApplication.clipboard()
         clipboard.setText(full_text)
 
-        self.statusBar().showMessage(f"Capítulo copiado: {book_name} {self.current_chapter}", 3000)
+        self.statusBar().showMessage(f"Capítulo copiado: {abbr}. {self.current_chapter}", 3000)
 
     def _prev_chapter(self):
         if self.current_chapter > 1:
