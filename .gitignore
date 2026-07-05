@@ -1,0 +1,5 @@
+.flatpak-builder/
+builddir/
+__pycache__/
+biblia-leitor
+flatpak-wheels/

@@ -11,24 +11,25 @@
         "--socket=fallback-x11",
         "--device=dri"
     ],
-    "build-options": {
-        "env": {
-            "PIP_NO_INPUT": "1",
-            "PIP_NO_WARN_SCRIPT_LOCATION": "0"
-        }
-    },
     "modules": [
         {
             "name": "python3-pyqt5",
             "buildsystem": "simple",
             "build-commands": [
-                "pip3 install --no-build-isolation --prefix=${FLATPAK_DEST} PyQt5==5.15.11"
+                "pip3 install --no-index --find-links=/run/build/python3-pyqt5 --prefix=${FLATPAK_DEST} PyQt5==5.15.11 PyQt5-sip==12.18.0 PyQt5-Qt5==5.15.19"
             ],
             "sources": [
                 {
                     "type": "file",
-                    "url": "https://files.pythonhosted.org/packages/c7/b1/c21a74280973463f6991da0b9a97e03693c6d0d0c0c3c3c3c3c3c3c3c3c3c3c/PyQt5-5.15.11.tar.gz",
-                    "sha256": "d24716d8f8a5dad89c842bdb64027477ec6b2c0e48b2c7a7a8a8a8a8a8a8a8a8"
+                    "path": "flatpak-wheels/PyQt5-5.15.11-cp38-abi3-manylinux_2_17_x86_64.whl"
+                },
+                {
+                    "type": "file",
+                    "path": "flatpak-wheels/pyqt5_sip-12.18.0-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.whl"
+                },
+                {
+                    "type": "file",
+                    "path": "flatpak-wheels/pyqt5_qt5-5.15.19-py3-none-manylinux2014_x86_64.whl"
                 }
             ]
         },

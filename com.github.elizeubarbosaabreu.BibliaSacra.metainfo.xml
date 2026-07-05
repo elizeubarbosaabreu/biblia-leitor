@@ -20,7 +20,8 @@
       <li>Copiar com citação formatada</li>
     </ul>
   </description>
-  <license>MIT</license>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
   <url type="homepage">https://www.elizeubarbosa.com.br/biblia/</url>
   <url type="bugtracker">https://github.com/elizeubarbosaabreu/biblia-leitor/issues</url>
   <url type="vcs-browser">https://github.com/elizeubarbosaabreu/biblia-leitor</url>
