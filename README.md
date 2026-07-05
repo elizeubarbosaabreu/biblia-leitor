@@ -34,11 +34,20 @@ wget https://github.com/elizeubarbosaabreu/biblia-leitor/releases/download/v2.0/
 # Tornar executável
 chmod +x BibliaSacra-x86_64.AppImage
 
+# Instalar FUSE 2 (necessário em algumas distros)
+# Debian/Ubuntu/Mint: sudo apt install libfuse2
+# Fedora: sudo dnf install fuse-libs
+# Arch: sudo pacman -S fuse2
+
 # Executar
 ./BibliaSacra-x86_64.AppImage
 ```
 
+> **Problemas com FUSE?** Veja a seção [Solução de problemas](#solução-de-problemas) abaixo.
+
 ### Linux (executável standalone)
+
+Alternativa ao AppImage - não precisa de FUSE:
 
 ```bash
 # Baixar o executável
@@ -214,6 +223,52 @@ Exemplo:
 ---
 
 ## Solução de problemas
+
+### AppImage não executa (FUSE)
+
+Se o AppImage retorna erro como `AppImages require FUSE to run` ou `dlopen(): error loading libfuse.so.2`:
+
+**Solução 1 - Instalar FUSE 2 (recomendado):**
+
+```bash
+# Debian/Ubuntu/Mint
+sudo apt install libfuse2
+
+# Fedora
+sudo dnf install fuse-libs
+
+# Arch/Manjaro
+sudo pacman -S fuse2
+
+# openSUSE
+sudo zypper install libfuse2
+```
+
+**Solução 2 - Executar sem FUSE (extração manual):**
+
+```bash
+chmod +x BibliaSacra-x86_64.AppImage
+./BibliaSacra-x86_64.AppImage --appimage-extract
+cd squashfs-root
+./AppRun
+```
+
+**Solução 3 - Usar variável de ambiente:**
+
+```bash
+APPIMAGE_EXTRACT_AND_RUN=1 ./BibliaSacra-x86_64.AppImage
+```
+
+### AppImage não executa (/tmp com noexec)
+
+Algumas distros montam `/tmp` com `noexec` por segurança. Para resolver:
+
+```bash
+# Criar diretório temporário alternativo
+mkdir -p ~/tmp
+export TMPDIR=~/tmp
+./BibliaSacra-x86_64.AppImage
+```
 
 ### "Não encontra as versões bíblicas"
 

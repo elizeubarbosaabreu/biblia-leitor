@@ -1,6 +1,16 @@
 #!/bin/bash
 SELF=$(readlink -f "$0")
 HERE=${SELF%/*}
+
 export PATH="${HERE}/usr/bin/:${PATH}"
 export XDG_DATA_DIRS="${HERE}/usr/share/:${XDG_DATA_DIRS:-/usr/local/share/:/usr/share/}"
-exec "${HERE}/usr/bin/biblia" "$@"
+
+# Definir QT plugin path para o AppImage
+if [ -d "${HERE}/usr/bin/PyQt5/Qt5/plugins" ]; then
+    export QT_PLUGIN_PATH="${HERE}/usr/bin/PyQt5/Qt5/plugins"
+elif [ -d "${HERE}/usr/bin/qt5_plugins" ]; then
+    export QT_PLUGIN_PATH="${HERE}/usr/bin/qt5_plugins"
+fi
+
+# PyInstaller onedir: executável está direto em usr/bin/
+exec "${HERE}/usr/bin/BibliaSacra" "$@"
