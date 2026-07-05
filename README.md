@@ -125,6 +125,13 @@ Keywords=biblia;bible;leitor;reader;
 2. **Clique numa cor** na barra de ferramentas para aplicar a marcação
 3. **Clique em "Limpar"** para remover a marcação do versículo atual
 
+### Copiar versículo
+
+1. **Navegue até o versículo** desejado
+2. **Clique em "📋 Copiar Versículo"**
+3. O texto será copiado com a referência (ex: "Gênesis 1:1 - No princípio...")
+4. **Cole em qualquer lugar** com `Ctrl+V`
+
 ### Atalhos de teclado
 
 | Tecla | Ação |
