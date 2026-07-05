@@ -86,7 +86,7 @@ class BibleLoader:
             return
 
         for file_path in BIBLE_DATA_DIR.iterdir():
-            if file_path.suffix == '.SQLite3':
+            if file_path.suffix.lower() in ('.sqlite3', '.sqlite', '.db'):
                 name = file_path.stem
                 self.versions[name] = {'type': 'sqlite', 'path': file_path}
             elif file_path.suffix == '.spb':
@@ -163,6 +163,54 @@ class BibleLoader:
         conn = sqlite3.connect(str(path))
         cursor = conn.cursor()
 
+        # Detectar esquema: OpenLP (metadata/book/verse) ou antigo (info/books/verses)
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = {row[0] for row in cursor.fetchall()}
+
+        if 'metadata' in tables and 'book' in tables and 'verse' in tables:
+            return self._load_sqlite_openlp(cursor, conn)
+        elif 'info' in tables and 'books' in tables and 'verses' in tables:
+            return self._load_sqlite_legacy(cursor, conn)
+        else:
+            conn.close()
+            return None
+
+    def _load_sqlite_openlp(self, cursor, conn):
+        cursor.execute("SELECT value FROM metadata WHERE key='name'")
+        row = cursor.fetchone()
+        name = row[0] if row else "Desconhecida"
+
+        cursor.execute("SELECT id, name FROM book")
+        books_raw = cursor.fetchall()
+
+        books = {}
+        for book_id, book_name in books_raw:
+            books[book_id] = {
+                'id': book_id,
+                'abbr': BOOK_ABBR_PT.get(book_id, f"Lv{book_id}"),
+                'name': book_name if book_name else BOOK_NAMES_PT.get(book_id, f'Livro {book_id}'),
+                'color': '#000000'
+            }
+
+        cursor.execute("SELECT book_id, chapter, verse, text FROM verse")
+        verses_raw = cursor.fetchall()
+
+        verses = {}
+        for book_id, chapter, verse, text in verses_raw:
+            key = (book_id, chapter)
+            if key not in verses:
+                verses[key] = {}
+            verses[key][verse] = text
+
+        conn.close()
+
+        return {
+            'name': name,
+            'books': books,
+            'verses': verses
+        }
+
+    def _load_sqlite_legacy(self, cursor, conn):
         cursor.execute("SELECT * FROM info")
         info = dict(cursor.fetchall())
 
