@@ -1,0 +1,52 @@
+{
+    "app-id": "com.github.elizeubarbosaabreu.BibliaSacra",
+    "runtime": "org.kde.Platform",
+    "runtime-version": "5.15-23.08",
+    "sdk": "org.kde.Sdk",
+    "command": "biblia",
+    "finish-args": [
+        "--share=ipc",
+        "--socket=x11",
+        "--socket=wayland",
+        "--socket=fallback-x11",
+        "--device=dri"
+    ],
+    "build-options": {
+        "env": {
+            "PIP_NO_INPUT": "1",
+            "PIP_NO_WARN_SCRIPT_LOCATION": "0"
+        }
+    },
+    "modules": [
+        {
+            "name": "python3-pyqt5",
+            "buildsystem": "simple",
+            "build-commands": [
+                "pip3 install --no-build-isolation --prefix=${FLATPAK_DEST} PyQt5==5.15.11"
+            ],
+            "sources": [
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/c7/b1/c21a74280973463f6991da0b9a97e03693c6d0d0c0c3c3c3c3c3c3c3c3c3c3c/PyQt5-5.15.11.tar.gz",
+                    "sha256": "d24716d8f8a5dad89c842bdb64027477ec6b2c0e48b2c7a7a8a8a8a8a8a8a8a8"
+                }
+            ]
+        },
+        {
+            "name": "biblia",
+            "buildsystem": "simple",
+            "build-commands": [
+                "install -Dm755 biblia.py /app/bin/biblia",
+                "install -Dm644 biblia.png /app/share/icons/hicolor/256x256/apps/com.github.elizeubarbosaabreu.BibliaSacra.png",
+                "install -Dm644 com.github.elizeubarbosaabreu.BibliaSacra.desktop /app/share/applications/com.github.elizeubarbosaabreu.BibliaSacra.desktop",
+                "install -Dm644 com.github.elizeubarbosaabreu.BibliaSacra.metainfo.xml /app/share/metainfo/com.github.elizeubarbosaabreu.BibliaSacra.metainfo.xml"
+            ],
+            "sources": [
+                {
+                    "type": "dir",
+                    "path": "."
+                }
+            ]
+        }
+    ]
+}

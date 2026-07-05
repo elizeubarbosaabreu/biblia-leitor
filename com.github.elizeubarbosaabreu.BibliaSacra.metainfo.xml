@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.github.elizeubarbosaabreu.BibliaSacra</id>
+  <name>Bíblia Sagrada</name>
+  <summary>Leitor de Bíblia com interface de livro</summary>
+  <description>
+    <p>
+      Leitor de Bíblia gratuito e offline com interface elegante estilo livro.
+      Suporta múltiplas versões bíblicas, marcações coloridas e citações formatadas.
+    </p>
+    <p>Funcionalidades:</p>
+    <ul>
+      <li>Interface estilo livro com visual de páginas</li>
+      <li>Texto grande e legível com fontes Serif</li>
+      <li>Marcações coloridas em versículos</li>
+      <li>Navegação intuitiva por livros, capítulos e versículos</li>
+      <li>Suporte a múltiplas versões bíblicas</li>
+      <li>Salva suas marcações automaticamente</li>
+      <li>Tamanho de fonte ajustável</li>
+      <li>Copiar com citação formatada</li>
+    </ul>
+  </description>
+  <license>MIT</license>
+  <url type="homepage">https://www.elizeubarbosa.com.br/biblia/</url>
+  <url type="bugtracker">https://github.com/elizeubarbosaabreu/biblia-leitor/issues</url>
+  <url type="vcs-browser">https://github.com/elizeubarbosaabreu/biblia-leitor</url>
+  <developer id="com.elizeubarbosa">
+    <name>Elizeu Barbosa</name>
+  </developer>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="2.1" date="2026-07-05">
+      <description>
+        <p>Suporte ao esquema SQLite OpenLP do repositório biblias.</p>
+      </description>
+    </release>
+  </releases>
+  <recommends>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </recommends>
+  <requires>
+    <display_length compare="ge">768</display_length>
+  </requires>
+</component>
