@@ -324,6 +324,12 @@ class BibleReader(QMainWindow):
         clear_btn.clicked.connect(self._clear_highlight)
         toolbar.addWidget(clear_btn)
 
+        # Botão copiar
+        copy_btn = QPushButton("📋 Copiar Versículo")
+        copy_btn.setStyleSheet("background-color: #4682B4; color: white; padding: 5px;")
+        copy_btn.clicked.connect(self._copy_with_reference)
+        toolbar.addWidget(copy_btn)
+
         main_layout.addLayout(toolbar)
 
         # Área de leitura estilo livro
@@ -501,14 +507,17 @@ class BibleReader(QMainWindow):
             if verse_num in highlight_map:
                 verse_format.setBackground(QColor(highlight_map[verse_num]))
 
-            # Número do versículo
+            # Número do versículo (em negrito e cor)
             num_format = QTextCharFormat()
             num_format.setFontWeight(QFont.Bold)
             num_format.setForeground(QColor("#8B4513"))
             cursor.insertText(f" {verse_num} ", num_format)
 
             # Texto do versículo
-            cursor.insertText(f"{text} ", verse_format)
+            cursor.insertText(f"{text}", verse_format)
+
+            # Quebra de linha após cada versículo
+            cursor.insertBlock()
 
         # Atualizar posição
         self.position_label.setText(
@@ -552,6 +561,32 @@ class BibleReader(QMainWindow):
             self.current_verse
         )
         self._display_chapter()
+
+    def _copy_with_reference(self):
+        """Copia o versículo atual com referência"""
+        if not self.current_data or not self.current_book:
+            return
+
+        key = (self.current_book, self.current_chapter)
+        if key not in self.current_data['verses']:
+            return
+
+        chapter_verses = self.current_data['verses'][key]
+        if self.current_verse not in chapter_verses:
+            return
+
+        book_name = self.current_data['books'].get(
+            self.current_book, {}
+        ).get('name', BOOK_NAMES_PT.get(self.current_book, ''))
+
+        verse_text = chapter_verses[self.current_verse]
+        reference = f"{book_name} {self.current_chapter}:{self.current_verse}"
+        full_text = f"{reference} - {verse_text}"
+
+        clipboard = QApplication.clipboard()
+        clipboard.setText(full_text)
+
+        self.position_label.setText(f"Copiado: {reference}")
 
     def _prev_chapter(self):
         if self.current_chapter > 1:
