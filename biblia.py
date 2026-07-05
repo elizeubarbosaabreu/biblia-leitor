@@ -860,27 +860,25 @@ class BibleReader(QMainWindow):
         <h3>Passo 1: Baixar as versoes</h3>
         <p>O aplicativo nao vem com versoes biblicas. Voce precisa baixar separadamente.</p>
         
-        <h3>Opcao 1: Bible SuperSearch (Recomendado)</h3>
+        <h3>Repositorio Oficial de Versoes (Recomendado)</h3>
         <ol>
-        <li>Acesse: <a href="https://biblesupersearch.com/download">biblesupersearch.com/download</a></li>
-        <li>Clique em "Download" na versao desejada</li>
-        <li>Escolha o formato <b>SQLite3</b></li>
+        <li>Acesse: <a href="https://github.com/elizeubarbosaabreu/biblias">github.com/elizeubarbosaabreu/biblias</a></li>
+        <li>Clique na versao desejada (ARA, ACF, NVI, etc.)</li>
+        <li>Clique em <b>Download</b> ou <b>Raw</b> para baixar o arquivo .sqlite</li>
         <li>Salve o arquivo no seu computador</li>
         </ol>
         
-        <h3>Opcao 2: The SWORD Project</h3>
-        <ol>
-        <li>Acesse: <a href="https://www.crosswire.org/sword/modules/ModDisp.jsp?modType=Bibles">crosswire.org</a></li>
-        <li>Procure versoes em portugues</li>
-        <li>Baixe o arquivo ZIP</li>
-        <li>Extraia o conteudo</li>
-        </ol>
+        <h3>Outras Fontes</h3>
+        <ul>
+        <li><a href="https://biblesupersearch.com/download">Bible SuperSearch</a> - Escolha formato SQLite3</li>
+        <li><a href="https://www.crosswire.org/sword/modules/ModDisp.jsp?modType=Bibles">The SWORD Project</a> - Formato .spb</li>
+        </ul>
         
         <h3>Passo 2: Importar no aplicativo</h3>
         <ol>
         <li>Abra o aplicativo Biblia Sagrada</li>
         <li>Va no menu <b>Arquivo > Importar Versao</b> (ou pressione Ctrl+I)</li>
-        <li>Navegue ate o arquivo baixado (.SQLite3 ou .spb)</li>
+        <li>Navegue ate o arquivo baixado (.sqlite, .SQLite3 ou .spb)</li>
         <li>Selecione o arquivo e clique em "Abrir"</li>
         <li>A versao sera importada automaticamente</li>
         </ol>
@@ -892,18 +890,27 @@ class BibleReader(QMainWindow):
         <li>Pronto! Agora voce pode ler a Biblia</li>
         </ol>
         
-        <h3>Versoes Populares</h3>
+        <h3>Versoes Disponiveis</h3>
+        <p>No repositorio oficial voce encontra:</p>
         <ul>
         <li><b>ARA</b> - Almeida Revisada Atualizada</li>
         <li><b>ACF</b> - Almeida Corrigida Fiel</li>
-        <li><b>NVI</b> - Nova Versao Internacional</li>
-        <li><b>CNBB</b> - Biblia CNBB</li>
+        <li><b>ARC</b> - Almeida Revisada Corrigida</li>
+        <li><b>AS21</b> - Atualizada Segundo a 21a Edicao</li>
+        <li><b>JFAA</b> - Joao Ferreira de Almeida Atualizada</li>
+        <li><b>KJA</b> - King James Atualizada</li>
+        <li><b>KJF</b> - King James Fiel</li>
+        <li><b>NAA</b> - Nova Almeida Atualizada</li>
+        <li><b>NBV</b> - Nova Biblia Viva</li>
         <li><b>NTLH</b> - Nova Traducao na Linguagem de Hoje</li>
+        <li><b>NVI</b> - Nova Versao Internacional</li>
+        <li><b>NVT</b> - Nova Versao Traduzida</li>
+        <li><b>TB</b> - Traducao de Brasilia</li>
         </ul>
         
         <h3>Formatos Suportados</h3>
         <ul>
-        <li><b>.SQLite3</b> - Formato padrao</li>
+        <li><b>.sqlite</b> / <b>.SQLite3</b> - Formato padrao (recomendado)</li>
         <li><b>.spb</b> - Formato The SWORD Project</li>
         </ul>
         

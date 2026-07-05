@@ -23,164 +23,80 @@ Um leitor de Bíblia elegante com interface de livro, texto grande e sistema de 
 
 ---
 
-## Download
+## Instalação
 
-### Linux (AppImage)
-
-```bash
-# Baixar o AppImage
-wget https://github.com/elizeubarbosaabreu/biblia-leitor/releases/download/v2.0/BibliaSacra-x86_64.AppImage
-
-# Tornar executável
-chmod +x BibliaSacra-x86_64.AppImage
-
-# Instalar FUSE 2 (necessário em algumas distros)
-# Debian/Ubuntu/Mint: sudo apt install libfuse2
-# Fedora: sudo dnf install fuse-libs
-# Arch: sudo pacman -S fuse2
-
-# Executar
-./BibliaSacra-x86_64.AppImage
-```
-
-> **Problemas com FUSE?** Veja a seção [Solução de problemas](#solução-de-problemas) abaixo.
-
-### Linux (executável standalone)
-
-Alternativa ao AppImage - não precisa de FUSE:
+### Opção 1: Executar via Python (Recomendado)
 
 ```bash
-# Baixar o executável
-wget https://github.com/elizeubarbosaabreu/biblia-leitor/releases/download/v2.0/BibliaSacra
+# Clonar o repositório
+git clone https://github.com/elizeubarbosaabreu/biblia-leitor.git
+cd biblia-leitor
 
-# Tornar executável
-chmod +x BibliaSacra
-
-# Executar
-./BibliaSacra
-```
-
-### Python (qualquer plataforma)
-
-```bash
 # Instalar dependências
-pip install PyQt5
-
-# Baixar o script
-wget https://raw.githubusercontent.com/elizeubarbosaabreu/biblia-leitor/master/biblia
-
-# Tornar executável
-chmod +x biblia
+pip install -r requirements.txt
 
 # Executar
-./biblia
+python biblia.py
 ```
+
+### Opção 2: Executar como script
+
+```bash
+# Baixar o script
+wget https://raw.githubusercontent.com/elizeubarbosaabreu/biblia-leitor/master/biblia.py
+
+# Tornar executável
+chmod +x biblia.py
+
+# Executar
+./biblia.py
+```
+
+### Dependências
+
+- Python 3.8+
+- PyQt5
 
 ---
 
-## Como Baixar e Instalar Versões Bíblicas
+## Como Baixar Versões Bíblicas
 
-### Passo 1: Baixar as versões
+O aplicativo não vem com versões bíblicas. Você precisa baixar separadamente.
 
-O aplicativo não vem com versões bíblicas. Você precisa baixar separadamente. Veja as opções abaixo, incluindo download direto do nosso repositório.
+### Repositório Oficial (Recomendado)
 
-#### Opção 1: Bible SuperSearch (Recomendado)
+Acesse: https://github.com/elizeubarbosaabreu/biblias
 
-1. Acesse: https://biblesupersearch.com/download
-2. Clique em "Download" na versão desejada
-3. Escolha o formato **SQLite3**
-4. Salve o arquivo no seu computador
-
-#### Opção 2: The SWORD Project
-
-1. Acesse: https://www.crosswire.org/sword/modules/ModDisp.jsp?modType=Bibles
-2. Procure versões em português
-3. Baixe o arquivo ZIP
-4. Extraia o conteúdo (será um arquivo .txt ou .zip)
-
-#### Opção 3: Xiphos
-
-1. Instale o Xiphos: https://xiphos.org
-2. Abra o Xiphos e vá em "File" > "Import"
-3. Exporte a versão desejada
-4. Salve como arquivo .spb
-
-#### Opção 4: Repositório oficial (Direto do GitHub)
-
-Disponibilizamos versões prontas no repositório [biblias](https://github.com/elizeubarbosaabreu/biblias/tree/main/inst/sql). Não é necessário criar conta no GitHub para baixar.
-
-**Versões disponíveis:**
+Lá você encontra versões em formato `.sqlite` prontas para importar:
 
 | Versão | Descrição |
 |--------|-----------|
-| ACF | Almeida Corrigida Fiel |
-| ARA | Almeida Revisada Atualizada |
-| ARC | Almeida Revisada Corrigida |
-| AS21 | Nova Tradução do Mundo (AS21) |
-| JFAA | João Ferreira de Almeida Atualizada |
-| KJA | King James Atualizada |
-| KJF | King James Ferreira de Almeida |
-| NAA | Nova Almeida Atualizada |
-| NBV | Nova Bíblia Viva |
-| NTLH | Nova Tradução na Linguagem de Hoje |
-| NVI | Nova Versão Internacional |
-| NVT | Nova Versão Tradução |
-| TB | Tradução Brasileira |
+| **ARA** | Almeida Revisada Atualizada |
+| **ACF** | Almeida Corrigida Fiel |
+| **ARC** | Almeida Revisada Corrigida |
+| **AS21** | Atualizada Segundo a 21ª Edição |
+| **JFAA** | João Ferreira de Almeida Atualizada |
+| **KJA** | King James Atualizada |
+| **KJF** | King James Fiel |
+| **NAA** | Nova Almeida Atualizada |
+| **NBV** | Nova Bíblia Viva |
+| **NTLH** | Nova Tradução na Linguagem de Hoje |
+| **NVI** | Nova Versão Internacional |
+| **NVT** | Nova Versão Traduzida |
+| **TB** | Tradução de Brasília |
 
-**Como baixar:**
+### Outras Fontes
 
-1. Acesse: https://github.com/elizeubarbosaabreu/biblias/tree/main/inst/sql
-2. Clique na versão desejada (ex: `NVI.sqlite`)
-3. Clique no ícone de **download** (seta para baixo) ou clique em **"Raw"**
-4. Salve o arquivo `.sqlite` no seu computador
+- [Bible SuperSearch](https://biblesupersearch.com/download) - Escolha formato SQLite3
+- [The SWORD Project](https://www.crosswire.org/sword/modules/ModDisp.jsp?modType=Bibles) - Formato .spb
 
-**Ou baixe diretamente via terminal:**
-
-```bash
-# Exemplo: baixar a versão NVI
-wget https://github.com/elizeubarbosaabreu/biblias/raw/main/inst/sql/NVI.sqlite
-
-# Exemplo: baixar a versão ARA
-wget https://github.com/elizeubarbosaabreu/biblias/raw/main/inst/sql/ARA.sqlite
-```
-
-> **Nota:** Estes arquivos são formatados no padrão **SQLite3**, compatível com o aplicativo.
-
-### Passo 2: Importar no aplicativo
+### Importar no Aplicativo
 
 1. Abra o aplicativo Bíblia Sagrada
 2. Vá no menu **Arquivo > Importar Versão** (ou pressione `Ctrl+I`)
-3. Navegue até o arquivo baixado (`.SQLite3` ou `.spb`)
+3. Navegue até o arquivo baixado (`.sqlite`, `.SQLite3` ou `.spb`)
 4. Selecione o arquivo e clique em "Abrir"
 5. A versão será importada automaticamente
-
-### Passo 3: Selecionar a versão
-
-1. No dropdown "Versão" na barra superior
-2. Selecione a versão que você importou
-3. Pronto! Agora você pode ler a Bíblia
-
----
-
-## Versões Populares em Português
-
-Todas as versões abaixo estão disponíveis para download direto do repositório [biblias/inst/sql](https://github.com/elizeubarbosaabreu/biblias/tree/main/inst/sql), além do [Bible SuperSearch](https://biblesupersearch.com/download).
-
-| Versão | Formato | Descrição | Onde baixar |
-|--------|---------|-----------|-------------|
-| **ARA** | SQLite3 | Almeida Revisada Atualizada | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/ARA.sqlite) · [Bible SuperSearch](https://biblesupersearch.com/download) |
-| **ACF** | SQLite3 | Almeida Corrigida Fiel | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/ACF.sqlite) · [Bible SuperSearch](https://biblesupersearch.com/download) |
-| **ARC** | SQLite3 | Almeida Revisada Corrigida | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/ARC.sqlite) |
-| **NVI** | SQLite3 | Nova Versão Internacional | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/NVI.sqlite) · [Bible SuperSearch](https://biblesupersearch.com/download) |
-| **NTLH** | SQLite3 | Nova Tradução na Linguagem de Hoje | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/NTLH.sqlite) · [Bible SuperSearch](https://biblesupersearch.com/download) |
-| **NAA** | SQLite3 | Nova Almeida Atualizada | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/NAA.sqlite) |
-| **NVT** | SQLite3 | Nova Versão Tradução | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/NVT.sqlite) |
-| **NBV** | SQLite3 | Nova Bíblia Viva | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/NBV.sqlite) |
-| **KJA** | SQLite3 | King James Atualizada | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/KJA.sqlite) |
-| **KJF** | SQLite3 | King James Ferreira de Almeida | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/KJF.sqlite) |
-| **JFAA** | SQLite3 | João Ferreira de Almeida Atualizada | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/JFAA.sqlite) |
-| **AS21** | SQLite3 | Nova Tradução do Mundo (AS21) | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/AS21.sqlite) |
-| **TB** | SQLite3 | Tradução Brasileira | [GitHub](https://github.com/elizeubarbosaabreu/biblias/blob/main/inst/sql/TB.sqlite) |
 
 ---
 
@@ -189,7 +105,7 @@ Todas as versões abaixo estão disponíveis para download direto do repositóri
 ### Menu Arquivo
 | Item | Atalho | Descrição |
 |------|--------|-----------|
-| Importar Versão | `Ctrl+I` | Importa um arquivo .SQLite3 ou .spb |
+| Importar Versão | `Ctrl+I` | Importa um arquivo .sqlite, .SQLite3 ou .spb |
 | Excluir Versão | `Delete` | Remove a versão selecionada |
 | Sair | `Ctrl+Q` | Fecha o aplicativo |
 
@@ -224,62 +140,16 @@ Exemplo:
 
 ## Solução de problemas
 
-### AppImage não executa (FUSE)
-
-Se o AppImage retorna erro como `AppImages require FUSE to run` ou `dlopen(): error loading libfuse.so.2`:
-
-**Solução 1 - Instalar FUSE 2 (recomendado):**
-
-```bash
-# Debian/Ubuntu/Mint
-sudo apt install libfuse2
-
-# Fedora
-sudo dnf install fuse-libs
-
-# Arch/Manjaro
-sudo pacman -S fuse2
-
-# openSUSE
-sudo zypper install libfuse2
-```
-
-**Solução 2 - Executar sem FUSE (extração manual):**
-
-```bash
-chmod +x BibliaSacra-x86_64.AppImage
-./BibliaSacra-x86_64.AppImage --appimage-extract
-cd squashfs-root
-./AppRun
-```
-
-**Solução 3 - Usar variável de ambiente:**
-
-```bash
-APPIMAGE_EXTRACT_AND_RUN=1 ./BibliaSacra-x86_64.AppImage
-```
-
-### AppImage não executa (/tmp com noexec)
-
-Algumas distros montam `/tmp` com `noexec` por segurança. Para resolver:
-
-```bash
-# Criar diretório temporário alternativo
-mkdir -p ~/tmp
-export TMPDIR=~/tmp
-./BibliaSacra-x86_64.AppImage
-```
-
 ### "Não encontra as versões bíblicas"
 
 1. Verifique se você importou alguma versão
 2. Vá em **Arquivo > Importar Versão**
-3. Selecione um arquivo `.SQLite3` ou `.spb`
+3. Baixe versões em https://github.com/elizeubarbosaabreu/biblias
 
 ### "Erro: PyQt5 não encontrado"
 
 ```bash
-pip3 install PyQt5
+pip install PyQt5
 # ou
 sudo apt install python3-pyqt5
 ```
@@ -287,21 +157,13 @@ sudo apt install python3-pyqt5
 ### "Permissão negada ao executar"
 
 ```bash
-chmod +x ~/.local/bin/biblia
-```
-
-### "Comando biblia não encontrado"
-
-Verifique se `~/.local/bin` está no PATH:
-```bash
-echo $PATH | grep -q "$HOME/.local/bin" && echo "OK" || echo "Adicione ao ~/.bashrc: export PATH=\"\$HOME/.local/bin:\$PATH\""
+chmod +x biblia.py
 ```
 
 ### "Arquivo não importa"
 
-- Verifique se o arquivo é `.SQLite3` ou `.spb`
+- Verifique se o arquivo é `.sqlite`, `.SQLite3` ou `.spb`
 - Arquivos `.zip` precisam ser extraídos primeiro
-- Arquivos `.bbk` (E-Sword) precisam ser convertidos
 
 ---
 
@@ -309,10 +171,9 @@ echo $PATH | grep -q "$HOME/.local/bin" && echo "OK" || echo "Adicione ao ~/.bas
 
 ```
 biblia-leitor/
-├── biblia              # Aplicativo principal (executável Python)
+├── biblia.py           # Aplicativo principal
 ├── biblia.png          # Ícone do aplicativo
-├── BibliaSacra         # Executável standalone (Linux)
-├── BibliaSacra-x86_64.AppImage  # AppImage (Linux)
+├── requirements.txt    # Dependências Python
 ├── README.md           # Este arquivo
 └── LICENSE             # Licença MIT
 ```
@@ -321,7 +182,7 @@ biblia-leitor/
 
 ## Contribuindo
 
-Contribuições são bem-vindas! Siga estes passos:
+Contribuições são bem-vindas. Siga estes passos:
 
 1. Faça um fork do repositório
 2. Crie uma branch para sua feature (`git checkout -b nova-feature`)
@@ -343,7 +204,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para de
 - **Site:** https://elizeubarbosa.com.br/
 - **Blog:** https://sofagospel.blogspot.com/
 - **Tecnologias:** Python e PyQt5
-- **Formatos suportados:** SQLite3 e SPB (The SWORD Project)
+- **Versões bíblicas:** https://github.com/elizeubarbosaabreu/biblias
 
 ---
 
