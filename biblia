@@ -486,13 +486,13 @@ class BibleReader(QMainWindow):
         file_menu = menubar.addMenu("&Arquivo")
 
         # Importar versão
-        import_action = QAction("📥 Importar Versão...", self)
+        import_action = QAction("Importar Versao...", self)
         import_action.setShortcut("Ctrl+I")
         import_action.triggered.connect(self._import_version)
         file_menu.addAction(import_action)
 
         # Excluir versão
-        delete_action = QAction("🗑️ Excluir Versão...", self)
+        delete_action = QAction("Excluir Versao...", self)
         delete_action.setShortcut("Delete")
         delete_action.triggered.connect(self._delete_version)
         file_menu.addAction(delete_action)
@@ -500,7 +500,7 @@ class BibleReader(QMainWindow):
         file_menu.addSeparator()
 
         # Sair
-        exit_action = QAction("🚪 Sair", self)
+        exit_action = QAction("Sair", self)
         exit_action.setShortcut("Ctrl+Q")
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
@@ -508,22 +508,28 @@ class BibleReader(QMainWindow):
         # Menu Editar
         edit_menu = menubar.addMenu("&Editar")
 
+        # Copiar seleção
+        copy_selection_action = QAction("Copiar Selecao", self)
+        copy_selection_action.setShortcut("Ctrl+C")
+        copy_selection_action.triggered.connect(self._copy_selection)
+        edit_menu.addAction(copy_selection_action)
+
         # Copiar versículo
-        copy_verse_action = QAction("📋 Copiar Versículo", self)
-        copy_verse_action.setShortcut("Ctrl+C")
+        copy_verse_action = QAction("Copiar Versiculo (citacao)", self)
+        copy_verse_action.setShortcut("Ctrl+Shift+C")
         copy_verse_action.triggered.connect(self._copy_verse_citation)
         edit_menu.addAction(copy_verse_action)
 
         # Copiar capítulo
-        copy_chapter_action = QAction("📄 Copiar Capítulo", self)
-        copy_chapter_action.setShortcut("Ctrl+Shift+C")
+        copy_chapter_action = QAction("Copiar Capitulo", self)
+        copy_chapter_action.setShortcut("Ctrl+Shift+V")
         copy_chapter_action.triggered.connect(self._copy_chapter)
         edit_menu.addAction(copy_chapter_action)
 
         # Menu Ajuda
         help_menu = menubar.addMenu("&Ajuda")
 
-        about_action = QAction("ℹ️ Sobre", self)
+        about_action = QAction("Sobre", self)
         about_action.triggered.connect(self._show_about)
         help_menu.addAction(about_action)
 
@@ -736,6 +742,18 @@ class BibleReader(QMainWindow):
             'JFA+': 'JFA+',
         }
         return version_names.get(self.current_version, self.current_version)
+
+    def _copy_selection(self):
+        """Copia o texto selecionado"""
+        cursor = self.text_display.textCursor()
+        selected_text = cursor.selectedText()
+
+        if selected_text:
+            clipboard = QApplication.clipboard()
+            clipboard.setText(selected_text)
+            self.statusBar().showMessage("Selecao copiada", 3000)
+        else:
+            self.statusBar().showMessage("Nenhum texto selecionado", 3000)
 
     def _copy_verse_citation(self):
         """Copia o versículo no formato de citação"""
