@@ -1,0 +1,618 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Bíblia - Leitor de Bíblia com interface de livro
+Suporta versões SQLite3 e SPB do app net.lugsole.bible_gui
+"""
+
+import sys
+import os
+import json
+import sqlite3
+from pathlib import Path
+from PyQt5.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QPushButton, QLabel, QComboBox, QScrollArea, QTextEdit,
+    QMessageBox, QSplitter, QFrame, QFontComboBox, QSpinBox
+)
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QFont, QColor, QTextCharFormat, QTextCursor
+
+# Caminhos
+BIBLE_DATA_DIR = Path.home() / ".var/app/net.lugsole.bible_gui/data/net.lugsole.bible_gui/translations"
+HIGHLIGHTS_FILE = Path.home() / ".local/share/biblia_highlights.json"
+
+# Nomes dos livros em português
+BOOK_NAMES_PT = {
+    1: "Gênesis", 2: "Êxodo", 3: "Levítico", 4: "Números", 5: "Deuteronômio",
+    6: "Josué", 7: "Juízes", 8: "Rute", 9: "1 Samuel", 10: "2 Samuel",
+    11: "1 Reis", 12: "2 Reis", 13: "1 Crônicas", 14: "2 Crônicas", 15: "Esdras",
+    16: "Neemias", 17: "Ester", 18: "Jó", 19: "Salmos", 20: "Provérbios",
+    21: "Eclesiastes", 22: "Cântico dos Cânticos", 23: "Isaías", 24: "Jeremias",
+    25: "Lamentações", 26: "Ezequiel", 27: "Daniel", 28: "Oséias", 29: "Joel",
+    30: "Amós", 31: "Obadias", 32: "Jonas", 33: "Miquéias", 34: "Naum",
+    35: "Habacuque", 36: "Sofonias", 37: "Ageu", 38: "Zacarias", 39: "Malaquias",
+    40: "Mateus", 41: "Marcos", 42: "Lucas", 43: "João", 44: "Atos",
+    45: "Romanos", 46: "1 Coríntios", 47: "2 Coríntios", 48: "Gálatas",
+    49: "Efésios", 50: "Filipenses", 51: "Colossenses", 52: "1 Tessalonicenses",
+    53: "2 Tessalonicenses", 54: "1 Timóteo", 55: "2 Timóteo", 56: "Tito",
+    57: "Filemom", 58: "Hebreus", 59: "Tiago", 60: "1 Pedro", 61: "2 Pedro",
+    62: "1 João", 63: "2 João", 64: "3 João", 65: "Judas", 66: "Apocalipse"
+}
+
+
+class BibleLoader:
+    """Carrega versões bíblicas dos formatos SQLite3 e SPB"""
+
+    def __init__(self):
+        self.versions = {}
+        self._load_versions()
+
+    def _load_versions(self):
+        if not BIBLE_DATA_DIR.exists():
+            return
+
+        for file_path in BIBLE_DATA_DIR.iterdir():
+            if file_path.suffix == '.SQLite3':
+                name = file_path.stem
+                self.versions[name] = {'type': 'sqlite', 'path': file_path}
+            elif file_path.suffix == '.spb':
+                name = file_path.stem
+                self.versions[name] = {'type': 'spb', 'path': file_path}
+
+    def get_version_names(self):
+        return sorted(self.versions.keys())
+
+    def load_version(self, version_name):
+        if version_name not in self.versions:
+            return None
+
+        version_info = self.versions[version_name]
+
+        if version_info['type'] == 'sqlite':
+            return self._load_sqlite(version_info['path'])
+        else:
+            return self._load_spb(version_info['path'])
+
+    def _load_sqlite(self, path):
+        conn = sqlite3.connect(str(path))
+        cursor = conn.cursor()
+
+        # Obter informações
+        cursor.execute("SELECT * FROM info")
+        info = dict(cursor.fetchall())
+
+        # Obter livros
+        cursor.execute("SELECT * FROM books")
+        books_raw = cursor.fetchall()
+
+        books = {}
+        for book_id, abbr, full_name, color in books_raw:
+            book_num = book_id // 10
+            books[book_num] = {
+                'id': book_id,
+                'abbr': abbr,
+                'name': full_name if full_name else BOOK_NAMES_PT.get(book_num, f'Livro {book_num}'),
+                'color': color
+            }
+
+        # Obter versículos
+        cursor.execute("SELECT * FROM verses")
+        verses_raw = cursor.fetchall()
+
+        verses = {}
+        for book_id, chapter, verse, text in verses_raw:
+            book_num = book_id // 10
+            key = (book_num, chapter)
+            if key not in verses:
+                verses[key] = {}
+            verses[key][verse] = text
+
+        conn.close()
+
+        return {
+            'name': info.get('description', 'Desconhecida'),
+            'books': books,
+            'verses': verses
+        }
+
+    def _load_spb(self, path):
+        with open(path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+
+        # Parse header
+        title = "Desconhecida"
+        for line in lines[:10]:
+            if line.startswith('##Title:'):
+                title = line.split('\t')[1].strip() if '\t' in line else line[8:].strip()
+                break
+
+        # Parse livros
+        books = {}
+        verse_start = 0
+        for i, line in enumerate(lines):
+            if line.strip() == '-----':
+                verse_start = i + 1
+                break
+            if line.startswith('##') or not line.strip():
+                continue
+            parts = line.strip().split('\t')
+            if len(parts) >= 3:
+                try:
+                    book_num = int(parts[0])
+                    book_name = parts[1]
+                    num_chapters = int(parts[2])
+                    books[book_num] = {
+                        'name': book_name,
+                        'chapters': num_chapters
+                    }
+                except (ValueError, IndexError):
+                    continue
+
+        # Parse versículos
+        verses = {}
+        for line in lines[verse_start:]:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split('\t')
+            if len(parts) >= 5:
+                try:
+                    book_num = int(parts[1])
+                    chapter = int(parts[2])
+                    verse = int(parts[3])
+                    text = parts[4]
+                    key = (book_num, chapter)
+                    if key not in verses:
+                        verses[key] = {}
+                    verses[key][verse] = text
+                except (ValueError, IndexError):
+                    continue
+
+        return {
+            'name': title,
+            'books': books,
+            'verses': verses
+        }
+
+
+class HighlightManager:
+    """Gerencia marcações/highlights do usuário"""
+
+    def __init__(self):
+        self.highlights = {}
+        self._load()
+
+    def _load(self):
+        if HIGHLIGHTS_FILE.exists():
+            try:
+                with open(HIGHLIGHTS_FILE, 'r', encoding='utf-8') as f:
+                    self.highlights = json.load(f)
+            except:
+                self.highlights = {}
+
+    def _save(self):
+        HIGHLIGHTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(HIGHLIGHTS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(self.highlights, f, ensure_ascii=False, indent=2)
+
+    def get_highlights(self, version, book, chapter):
+        key = f"{version}:{book}:{chapter}"
+        return self.highlights.get(key, [])
+
+    def add_highlight(self, version, book, chapter, verse, color):
+        key = f"{version}:{book}:{chapter}"
+        if key not in self.highlights:
+            self.highlights[key] = []
+
+        # Remover highlight existente para este versículo
+        self.highlights[key] = [h for h in self.highlights[key] if h['verse'] != verse]
+
+        # Adicionar novo highlight
+        self.highlights[key].append({
+            'verse': verse,
+            'color': color
+        })
+
+        self._save()
+
+    def remove_highlight(self, version, book, chapter, verse):
+        key = f"{version}:{book}:{chapter}"
+        if key in self.highlights:
+            self.highlights[key] = [h for h in self.highlights[key] if h['verse'] != verse]
+            if not self.highlights[key]:
+                del self.highlights[key]
+            self._save()
+
+
+class BibleReader(QMainWindow):
+    """Janela principal do leitor de Bíblia"""
+
+    HIGHLIGHT_COLORS = [
+        ("Amarelo", "#FFFF00"),
+        ("Verde", "#90EE90"),
+        ("Azul", "#ADD8E6"),
+        ("Rosa", "#FFB6C1"),
+        ("Laranja", "#FFDAB9")
+    ]
+
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Bíblia Sagrada")
+        self.setMinimumSize(900, 700)
+
+        self.loader = BibleLoader()
+        self.highlight_manager = HighlightManager()
+
+        self.current_version = None
+        self.current_book = None
+        self.current_chapter = 1
+        self.current_verse = 1
+        self.font_size = 18
+
+        self._setup_ui()
+        self._load_versions()
+
+    def _setup_ui(self):
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        main_layout = QVBoxLayout(central_widget)
+        main_layout.setContentsMargins(10, 10, 10, 10)
+        main_layout.setSpacing(10)
+
+        # Barra superior
+        top_bar = QHBoxLayout()
+
+        # Versão
+        top_bar.addWidget(QLabel("Versão:"))
+        self.version_combo = QComboBox()
+        self.version_combo.setMinimumWidth(200)
+        self.version_combo.currentTextChanged.connect(self._on_version_changed)
+        top_bar.addWidget(self.version_combo)
+
+        # Livro
+        top_bar.addWidget(QLabel("Livro:"))
+        self.book_combo = QComboBox()
+        self.book_combo.setMinimumWidth(180)
+        self.book_combo.currentIndexChanged.connect(self._on_book_changed)
+        top_bar.addWidget(self.book_combo)
+
+        # Capítulo
+        top_bar.addWidget(QLabel("Cap:"))
+        self.chapter_spin = QSpinBox()
+        self.chapter_spin.setMinimum(1)
+        self.chapter_spin.setMaximum(150)
+        self.chapter_spin.valueChanged.connect(self._on_chapter_changed)
+        top_bar.addWidget(self.chapter_spin)
+
+        # Versículo
+        top_bar.addWidget(QLabel("Verso:"))
+        self.verse_spin = QSpinBox()
+        self.verse_spin.setMinimum(1)
+        self.verse_spin.setMaximum(200)
+        self.verse_spin.valueChanged.connect(self._on_verse_changed)
+        top_bar.addWidget(self.verse_spin)
+
+        top_bar.addStretch()
+        main_layout.addLayout(top_bar)
+
+        # Barra de ferramentas
+        toolbar = QHBoxLayout()
+
+        # Tamanho da fonte
+        toolbar.addWidget(QLabel("Tamanho:"))
+        self.font_size_spin = QSpinBox()
+        self.font_size_spin.setMinimum(12)
+        self.font_size_spin.setMaximum(36)
+        self.font_size_spin.setValue(self.font_size)
+        self.font_size_spin.valueChanged.connect(self._on_font_size_changed)
+        toolbar.addWidget(self.font_size_spin)
+
+        toolbar.addStretch()
+
+        # Botões de highlight
+        toolbar.addWidget(QLabel("Marcações:"))
+        for color_name, color_hex in self.HIGHLIGHT_COLORS:
+            btn = QPushButton(f"● {color_name}")
+            btn.setStyleSheet(f"background-color: {color_hex}; color: black; padding: 5px;")
+            btn.clicked.connect(lambda checked, c=color_hex: self._apply_highlight(c))
+            toolbar.addWidget(btn)
+
+        # Botão limpar
+        clear_btn = QPushButton("✕ Limpar")
+        clear_btn.setStyleSheet("background-color: #FF6666; color: white; padding: 5px;")
+        clear_btn.clicked.connect(self._clear_highlight)
+        toolbar.addWidget(clear_btn)
+
+        main_layout.addLayout(toolbar)
+
+        # Área de leitura estilo livro
+        reader_frame = QFrame()
+        reader_frame.setStyleSheet("""
+            QFrame {
+                background-color: #FFF8DC;
+                border: 2px solid #8B4513;
+                border-radius: 10px;
+            }
+        """)
+        reader_layout = QVBoxLayout(reader_frame)
+        reader_layout.setContentsMargins(30, 20, 30, 20)
+
+        # Título do capítulo
+        self.chapter_title = QLabel()
+        self.chapter_title.setAlignment(Qt.AlignCenter)
+        self.chapter_title.setFont(QFont("Serif", 20, QFont.Bold))
+        self.chapter_title.setStyleSheet("color: #8B4513; margin-bottom: 10px;")
+        reader_layout.addWidget(self.chapter_title)
+
+        # Texto bíblico
+        self.text_display = QTextEdit()
+        self.text_display.setReadOnly(True)
+        self.text_display.setFont(QFont("Serif", self.font_size))
+        self.text_display.setStyleSheet("""
+            QTextEdit {
+                background-color: #FFF8DC;
+                color: #333333;
+                border: none;
+                padding: 10px;
+                line-height: 1.6;
+            }
+        """)
+        reader_layout.addWidget(self.text_display)
+
+        main_layout.addWidget(reader_frame)
+
+        # Barra inferior com navegação
+        bottom_bar = QHBoxLayout()
+
+        prev_chapter_btn = QPushButton("◄ Capítulo Anterior")
+        prev_chapter_btn.clicked.connect(self._prev_chapter)
+        bottom_bar.addWidget(prev_chapter_btn)
+
+        prev_verse_btn = QPushButton("◄ Verso Anterior")
+        prev_verse_btn.clicked.connect(self._prev_verse)
+        bottom_bar.addWidget(prev_verse_btn)
+
+        bottom_bar.addStretch()
+
+        # Indicador de posição
+        self.position_label = QLabel()
+        self.position_label.setAlignment(Qt.AlignCenter)
+        bottom_bar.addWidget(self.position_label)
+
+        bottom_bar.addStretch()
+
+        next_verse_btn = QPushButton("Próximo Verso ►")
+        next_verse_btn.clicked.connect(self._next_verse)
+        bottom_bar.addWidget(next_verse_btn)
+
+        next_chapter_btn = QPushButton("Próximo Capítulo ►")
+        next_chapter_btn.clicked.connect(self._next_chapter)
+        bottom_bar.addWidget(next_chapter_btn)
+
+        main_layout.addLayout(bottom_bar)
+
+    def _load_versions(self):
+        names = self.loader.get_version_names()
+        self.version_combo.addItems(names)
+        if names:
+            self.version_combo.setCurrentIndex(0)
+
+    def _on_version_changed(self, version_name):
+        if not version_name:
+            return
+        self.current_version = version_name
+        self.current_data = self.loader.load_version(version_name)
+        if self.current_data:
+            self._populate_books()
+            self._display_chapter()
+
+    def _populate_books(self):
+        self.book_combo.clear()
+        if not self.current_data:
+            return
+
+        books = self.current_data['books']
+        for book_num in sorted(books.keys()):
+            name = books[book_num].get('name', BOOK_NAMES_PT.get(book_num, f'Livro {book_num}'))
+            self.book_combo.addItem(f"{book_num}. {name}", book_num)
+
+        if self.book_combo.count() > 0:
+            self.book_combo.setCurrentIndex(0)
+
+    def _on_book_changed(self, index):
+        if index < 0:
+            return
+        self.current_book = self.book_combo.currentData()
+        if self.current_book:
+            self._update_chapter_range()
+            self.current_chapter = 1
+            self.chapter_spin.setValue(1)
+            self._display_chapter()
+
+    def _update_chapter_range(self):
+        if not self.current_data or not self.current_book:
+            return
+
+        max_chapter = 1
+        for (book, chapter) in self.current_data['verses'].keys():
+            if book == self.current_book:
+                max_chapter = max(max_chapter, chapter)
+
+        self.chapter_spin.setMaximum(max_chapter)
+
+    def _on_chapter_changed(self, chapter):
+        if chapter < 1:
+            return
+        self.current_chapter = chapter
+        self._update_verse_range()
+        self._display_chapter()
+
+    def _update_verse_range(self):
+        if not self.current_data or not self.current_book:
+            return
+
+        key = (self.current_book, self.current_chapter)
+        if key in self.current_data['verses']:
+            max_verse = max(self.current_data['verses'][key].keys())
+            self.verse_spin.setMaximum(max_verse)
+
+    def _on_verse_changed(self, verse):
+        if verse < 1:
+            return
+        self.current_verse = verse
+        self._scroll_to_verse(verse)
+
+    def _on_font_size_changed(self, size):
+        self.font_size = size
+        self.text_display.setFont(QFont("Serif", size))
+
+    def _display_chapter(self):
+        if not self.current_data or not self.current_book:
+            return
+
+        # Título
+        book_name = self.current_data['books'].get(
+            self.current_book, {}
+        ).get('name', BOOK_NAMES_PT.get(self.current_book, ''))
+        self.chapter_title.setText(f"{book_name} {self.current_chapter}")
+
+        # Texto
+        self.text_display.clear()
+        key = (self.current_book, self.current_chapter)
+
+        if key not in self.current_data['verses']:
+            self.text_display.setPlainText("Capítulo não disponível nesta versão.")
+            return
+
+        chapter_verses = self.current_data['verses'][key]
+        highlights = self.highlight_manager.get_highlights(
+            self.current_version, self.current_book, self.current_chapter
+        )
+        highlight_map = {h['verse']: h['color'] for h in highlights}
+
+        cursor = self.text_display.textCursor()
+
+        for verse_num in sorted(chapter_verses.keys()):
+            text = chapter_verses[verse_num]
+
+            # Formato do versículo
+            verse_format = QTextCharFormat()
+            if verse_num in highlight_map:
+                verse_format.setBackground(QColor(highlight_map[verse_num]))
+
+            # Número do versículo
+            num_format = QTextCharFormat()
+            num_format.setFontWeight(QFont.Bold)
+            num_format.setForeground(QColor("#8B4513"))
+            cursor.insertText(f" {verse_num} ", num_format)
+
+            # Texto do versículo
+            cursor.insertText(f"{text} ", verse_format)
+
+        # Atualizar posição
+        self.position_label.setText(
+            f"{book_name} {self.current_chapter}:{self.current_verse}"
+        )
+
+    def _scroll_to_verse(self, verse):
+        # Encontrar posição do versículo e fazer scroll
+        text = self.text_display.toPlainText()
+        # Simplificado - apenas atualiza o indicador
+        book_name = self.current_data['books'].get(
+            self.current_book, {}
+        ).get('name', BOOK_NAMES_PT.get(self.current_book, ''))
+        self.position_label.setText(
+            f"{book_name} {self.current_chapter}:{verse}"
+        )
+
+    def _apply_highlight(self, color):
+        """Aplica marcação ao versículo atual"""
+        if not self.current_version or not self.current_book:
+            return
+
+        self.highlight_manager.add_highlight(
+            self.current_version,
+            self.current_book,
+            self.current_chapter,
+            self.current_verse,
+            color
+        )
+        self._display_chapter()
+
+    def _clear_highlight(self):
+        """Remove marcação do versículo atual"""
+        if not self.current_version or not self.current_book:
+            return
+
+        self.highlight_manager.remove_highlight(
+            self.current_version,
+            self.current_book,
+            self.current_chapter,
+            self.current_verse
+        )
+        self._display_chapter()
+
+    def _prev_chapter(self):
+        if self.current_chapter > 1:
+            self.chapter_spin.setValue(self.current_chapter - 1)
+
+    def _next_chapter(self):
+        max_ch = self.chapter_spin.maximum()
+        if self.current_chapter < max_ch:
+            self.chapter_spin.setValue(self.current_chapter + 1)
+
+    def _prev_verse(self):
+        if self.current_verse > 1:
+            self.verse_spin.setValue(self.current_verse - 1)
+        elif self.current_chapter > 1:
+            self.chapter_spin.setValue(self.current_chapter - 1)
+
+    def _next_verse(self):
+        max_ver = self.verse_spin.maximum()
+        if self.current_verse < max_ver:
+            self.verse_spin.setValue(self.current_verse + 1)
+        else:
+            max_ch = self.chapter_spin.maximum()
+            if self.current_chapter < max_ch:
+                self.chapter_spin.setValue(self.current_chapter + 1)
+                self.verse_spin.setValue(1)
+
+
+def main():
+    app = QApplication(sys.argv)
+
+    # Estilo global
+    app.setStyleSheet("""
+        QMainWindow {
+            background-color: #F5F5DC;
+        }
+        QComboBox, QSpinBox {
+            padding: 5px;
+            font-size: 14px;
+        }
+        QPushButton {
+            padding: 8px 12px;
+            font-size: 12px;
+            border: 1px solid #8B4513;
+            border-radius: 5px;
+            background-color: #DEB887;
+        }
+        QPushButton:hover {
+            background-color: #D2691E;
+            color: white;
+        }
+        QLabel {
+            font-size: 14px;
+            color: #333;
+        }
+    """)
+
+    window = BibleReader()
+    window.show()
+
+    sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
