@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Biblia Sagrada
+Comment=Leitor de Biblia com interface de livro
+Exec=biblia
+Icon=biblia
+Terminal=false
+Type=Application
+Categories=Utility;Education;
+Keywords=biblia;bible;leitor;reader;

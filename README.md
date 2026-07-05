@@ -17,106 +17,143 @@ Um leitor de Bíblia elegante com interface de livro, texto grande e sistema de 
 - **Suporte a múltiplas versões** bíblicas
 - **Salva suas marcações** automaticamente
 - **Tamanho de fonte ajustável** (12pt a 36pt)
-- **Importar versões** - botão para importar arquivos .SQLite3 e .spb
+- **Importar versões** - menu para importar arquivos .SQLite3 e .spb
+- **Copiar com citação** - formato: 'Texto' (Abbr. Cap:V, Versão)
 - **Cross-platform** - Linux, Windows e macOS
 
 ---
 
-## Versões Suportadas
+## Download
 
-O aplicativo aceita arquivos nos formatos **SQLite3** e **SPB**.
-
-### Onde baixar versões gratuitas
-
-| Fonte | URL | Formatos |
-|-------|-----|----------|
-| **The SWORD Project** | https://www.crosswire.org/sword/modules/ModDisp.jsp?modType=Bibles | ZIP (extrair .txt) |
-| **Bible SuperSearch** | https://biblesupersearch.com/download | SQLite3 |
-| **Xiphos** (desktop) | https://xiphos.org | .spbb, .zip |
-| **E-Sword** | https://e-sword.net | .bbk (converter) |
-| **BibleGateway** | https://www.biblegateway.com/versions/ | Texto para copiar |
-| **YouVersion** | https://www.bible.com/ | App mobile |
-
-### Versões populares em português
-
-| Versão | Formato | Descrição |
-|--------|---------|-----------|
-| ARA | SPB | Almeida Revisada Atualizada |
-| ACF | SPB | Almeida Corrigida Fiel |
-| NVI | SQLite3 | Nova Versão Internacional |
-| CNBB | SQLite3 | Bíblia CNBB (Nova Capa) |
-| NTLH | SQLite3 | Nova Tradução na Linguagem de Hoje |
-| KJV | SPB | King James Version (inglês) |
-
----
-
-## Pré-requisitos
-
-- **Python 3.8** ou superior
-- **PyQt5** (interface gráfica)
-
-### Instalar dependências
+### Linux (AppImage)
 
 ```bash
-# Ubuntu/Debian
-sudo apt install python3-pyqt5
+# Baixar o AppImage
+wget https://github.com/elizeubarbosaabreu/biblia-leitor/releases/download/v2.0/BibliaSacra-x86_64.AppImage
 
-# Fedora
-sudo dnf install python3-qt5
+# Tornar executável
+chmod +x BibliaSacra-x86_64.AppImage
 
-# Arch Linux
-sudo pacman -S python-pyqt5
+# Executar
+./BibliaSacra-x86_64.AppImage
+```
 
-# Windows/macOS
+### Linux (executável standalone)
+
+```bash
+# Baixar o executável
+wget https://github.com/elizeubarbosaabreu/biblia-leitor/releases/download/v2.0/BibliaSacra
+
+# Tornar executável
+chmod +x BibliaSacra
+
+# Executar
+./BibliaSacra
+```
+
+### Python (qualquer plataforma)
+
+```bash
+# Instalar dependências
 pip install PyQt5
-```
 
----
+# Baixar o script
+wget https://raw.githubusercontent.com/elizeubarbosaabreu/biblia-leitor/master/biblia
 
-## Instalação
-
-### Método 1: Instalação rápida (recomendado)
-
-Copie e cole o comando abaixo no seu terminal:
-
-```bash
-# Linux
-mkdir -p ~/.local/bin && \
-curl -sL https://raw.githubusercontent.com/elizeubarbosaabreu/biblia-leitor/master/biblia -o ~/.local/bin/biblia && \
-chmod +x ~/.local/bin/biblia && \
-echo "Instalado com sucesso! Execute: biblia"
-```
-
-### Método 2: Clonar o repositório
-
-```bash
-git clone https://github.com/elizeubarbosaabreu/biblia-leitor.git
-cd biblia-leitor
+# Tornar executável
 chmod +x biblia
-cp biblia ~/.local/bin/
+
+# Executar
+./biblia
 ```
-
-### Método 3: Instalar manualmente
-
-1. Baixe o arquivo `biblia`
-2. Torne-o executável: `chmod +x biblia`
-3. Copie para `~/.local/bin/`: `cp biblia ~/.local/bin/`
 
 ---
 
-## Executar
+## Como Baixar e Instalar Versões Bíblicas
 
-```bash
-biblia
+### Passo 1: Baixar as versões
+
+O aplicativo não vem com versões bíblicas. Você precisa baixar separadamente.
+
+#### Opção 1: Bible SuperSearch (Recomendado)
+
+1. Acesse: https://biblesupersearch.com/download
+2. Clique em "Download" na versão desejada
+3. Escolha o formato **SQLite3**
+4. Salve o arquivo no seu computador
+
+#### Opção 2: The SWORD Project
+
+1. Acesse: https://www.crosswire.org/sword/modules/ModDisp.jsp?modType=Bibles
+2. Procure versões em português
+3. Baixe o arquivo ZIP
+4. Extraia o conteúdo (será um arquivo .txt ou .zip)
+
+#### Opção 3: Xiphos
+
+1. Instale o Xiphos: https://xiphos.org
+2. Abra o Xiphos e vá em "File" > "Import"
+3. Exporte a versão desejada
+4. Salve como arquivo .spb
+
+### Passo 2: Importar no aplicativo
+
+1. Abra o aplicativo Bíblia Sagrada
+2. Vá no menu **Arquivo > Importar Versão** (ou pressione `Ctrl+I`)
+3. Navegue até o arquivo baixado (`.SQLite3` ou `.spb`)
+4. Selecione o arquivo e clique em "Abrir"
+5. A versão será importada automaticamente
+
+### Passo 3: Selecionar a versão
+
+1. No dropdown "Versão" na barra superior
+2. Selecione a versão que você importou
+3. Pronto! Agora você pode ler a Bíblia
+
+---
+
+## Versões Populares em Português
+
+| Versão | Formato | Descrição | Onde baixar |
+|--------|---------|-----------|-------------|
+| **ARA** | SPB | Almeida Revisada Atualizada | [Bible SuperSearch](https://biblesupersearch.com/download) |
+| **ACF** | SPB | Almeida Corrigida Fiel | [Bible SuperSearch](https://biblesupersearch.com/download) |
+| **NVI** | SQLite3 | Nova Versão Internacional | [Bible SuperSearch](https://biblesupersearch.com/download) |
+| **CNBB** | SQLite3 | Bíblia CNBB (Nova Capa) | [Bible SuperSearch](https://biblesupersearch.com/download) |
+| **NTLH** | SQLite3 | Nova Tradução na Linguagem de Hoje | [Bible SuperSearch](https://biblesupersearch.com/download) |
+| **KJV** | SPB | King James Version (inglês) | [Bible SuperSearch](https://biblesupersearch.com/download) |
+
+---
+
+## Menu e Atalhos
+
+### Menu Arquivo
+| Item | Atalho | Descrição |
+|------|--------|-----------|
+| Importar Versão | `Ctrl+I` | Importa um arquivo .SQLite3 ou .spb |
+| Excluir Versão | `Delete` | Remove a versão selecionada |
+| Sair | `Ctrl+Q` | Fecha o aplicativo |
+
+### Menu Editar
+| Item | Atalho | Descrição |
+|------|--------|-----------|
+| Copiar Seleção | `Ctrl+C` | Copia o texto selecionado com referência |
+| Copiar Versículo | `Ctrl+Shift+C` | Copia o versículo no formato citação |
+| Copiar Capítulo | `Ctrl+Shift+V` | Copia todos os versículos do capítulo |
+
+### Formato de Citação
+```
+'Texto do versículo' (Abbr. Cap:V, Versão)
 ```
 
-### Importar versões bíblicas
+Exemplo:
+```
+'Assim resplandeça a vossa luz diante dos homens, para que vejam as vossas boas obras e glorifiquem a vosso Pai, que está nos céus.' (Mt. 5:16, ARA)
+```
 
-1. Clique no botão **"📥 Importar"** na barra superior
-2. Selecione um arquivo `.SQLite3` ou `.spb`
-3. A versão será copiada para o diretório de dados e ficará disponível
+---
 
-### Localização dos dados
+## Localização dos dados
 
 | Sistema | Caminho |
 |---------|---------|
@@ -124,74 +161,15 @@ biblia
 | **Windows** | `%APPDATA%/xiphos/translations/` |
 | **macOS** | `~/Library/Application Support/xiphos/translations/` |
 
-### Atalho no menu do sistema
-
-Crie o arquivo `~/.local/share/applications/biblia.desktop`:
-
-```ini
-[Desktop Entry]
-Name=Bíblia Sagrada
-Comment=Leitor de Bíblia com interface de livro
-Exec=biblia
-Icon=biblia
-Terminal=false
-Type=Application
-Categories=Utility;Education;Religion;
-Keywords=biblia;bible;leitor;reader;
-```
-
----
-
-## Uso
-
-### Navegação
-
-1. **Selecione a versão** no dropdown "Versão"
-2. **Escolha o livro** no dropdown "Livro"
-3. **Navegue pelos capítulos** usando os botões ou o seletor numérico
-4. **Navegue pelos versículos** da mesma forma
-
-### Marcação de textos
-
-1. **Selecione o versículo** que deseja marcar
-2. **Clique numa cor** na barra de ferramentas para aplicar a marcação
-3. **Clique em "Limpar"** para remover a marcação do versículo atual
-
-### Copiar versículo
-
-1. **Navegue até o versículo** desejado
-2. **Clique em "📋 Copiar Versículo"**
-3. O texto será copiado com a referência (ex: "Gênesis 1:1 - No princípio...")
-4. **Cole em qualquer lugar** com `Ctrl+V`
-
-### Atalhos de teclado
-
-| Tecla | Ação |
-|-------|------|
-| `←` | Capítulo/vérsulo anterior |
-| `→` | Próximo capítulo/vérsulo |
-| `+` | Aumentar fonte |
-| `-` | Diminuir fonte |
-
----
-
-## Estrutura do projeto
-
-```
-biblia-leitor/
-├── biblia              # Aplicativo principal (executável Python)
-├── biblia.png          # Ícone do aplicativo
-├── README.md           # Este arquivo
-└── LICENSE             # Licença MIT
-```
-
 ---
 
 ## Solução de problemas
 
 ### "Não encontra as versões bíblicas"
 
-Clique no botão **"📥 Importar"** e selecione um arquivo `.SQLite3` ou `.spb`.
+1. Verifique se você importou alguma versão
+2. Vá em **Arquivo > Importar Versão**
+3. Selecione um arquivo `.SQLite3` ou `.spb`
 
 ### "Erro: PyQt5 não encontrado"
 
@@ -212,6 +190,26 @@ chmod +x ~/.local/bin/biblia
 Verifique se `~/.local/bin` está no PATH:
 ```bash
 echo $PATH | grep -q "$HOME/.local/bin" && echo "OK" || echo "Adicione ao ~/.bashrc: export PATH=\"\$HOME/.local/bin:\$PATH\""
+```
+
+### "Arquivo não importa"
+
+- Verifique se o arquivo é `.SQLite3` ou `.spb`
+- Arquivos `.zip` precisam ser extraídos primeiro
+- Arquivos `.bbk` (E-Sword) precisam ser convertidos
+
+---
+
+## Estrutura do projeto
+
+```
+biblia-leitor/
+├── biblia              # Aplicativo principal (executável Python)
+├── biblia.png          # Ícone do aplicativo
+├── BibliaSacra         # Executável standalone (Linux)
+├── BibliaSacra-x86_64.AppImage  # AppImage (Linux)
+├── README.md           # Este arquivo
+└── LICENSE             # Licença MIT
 ```
 
 ---
@@ -236,8 +234,11 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para de
 
 ## Créditos
 
-- Desenvolvido com Python e PyQt5
-- Formatos suportados: SQLite3 e SPB (The SWORD Project)
+- **Desenvolvido por:** Elizeu Barbosa
+- **Site:** https://elizeubarbosa.com.br/
+- **Blog:** https://sofagospel.blogspot.com/
+- **Tecnologias:** Python e PyQt5
+- **Formatos suportados:** SQLite3 e SPB (The SWORD Project)
 
 ---
 

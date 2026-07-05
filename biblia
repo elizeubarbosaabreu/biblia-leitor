@@ -5,7 +5,8 @@ Bíblia - Leitor de Bíblia com interface de livro
 Suporta versões SQLite3 e SPB
 
 Desenvolvido por: Elizeu Barbosa
-Site: www.elizebarbosa.com.br
+Site: https://elizeubarbosa.com.br/
+Blog: https://sofagospel.blogspot.com/
 """
 
 import sys
@@ -529,6 +530,13 @@ class BibleReader(QMainWindow):
         # Menu Ajuda
         help_menu = menubar.addMenu("&Ajuda")
 
+        help_action = QAction("Como Baixar Versoes...", self)
+        help_action.setShortcut("F1")
+        help_action.triggered.connect(self._show_help)
+        help_menu.addAction(help_action)
+
+        help_menu.addSeparator()
+
         about_action = QAction("Sobre", self)
         about_action.triggered.connect(self._show_about)
         help_menu.addAction(about_action)
@@ -844,6 +852,70 @@ class BibleReader(QMainWindow):
                 self.chapter_spin.setValue(self.current_chapter + 1)
                 self.verse_spin.setValue(1)
 
+    def _show_help(self):
+        """Mostra ajuda sobre como baixar versoes"""
+        help_text = """
+        <h2>Como Baixar e Instalar Versoes Biblicas</h2>
+        
+        <h3>Passo 1: Baixar as versoes</h3>
+        <p>O aplicativo nao vem com versoes biblicas. Voce precisa baixar separadamente.</p>
+        
+        <h3>Opcao 1: Bible SuperSearch (Recomendado)</h3>
+        <ol>
+        <li>Acesse: <a href="https://biblesupersearch.com/download">biblesupersearch.com/download</a></li>
+        <li>Clique em "Download" na versao desejada</li>
+        <li>Escolha o formato <b>SQLite3</b></li>
+        <li>Salve o arquivo no seu computador</li>
+        </ol>
+        
+        <h3>Opcao 2: The SWORD Project</h3>
+        <ol>
+        <li>Acesse: <a href="https://www.crosswire.org/sword/modules/ModDisp.jsp?modType=Bibles">crosswire.org</a></li>
+        <li>Procure versoes em portugues</li>
+        <li>Baixe o arquivo ZIP</li>
+        <li>Extraia o conteudo</li>
+        </ol>
+        
+        <h3>Passo 2: Importar no aplicativo</h3>
+        <ol>
+        <li>Abra o aplicativo Biblia Sagrada</li>
+        <li>Va no menu <b>Arquivo > Importar Versao</b> (ou pressione Ctrl+I)</li>
+        <li>Navegue ate o arquivo baixado (.SQLite3 ou .spb)</li>
+        <li>Selecione o arquivo e clique em "Abrir"</li>
+        <li>A versao sera importada automaticamente</li>
+        </ol>
+        
+        <h3>Passo 3: Selecionar a versao</h3>
+        <ol>
+        <li>No dropdown "Versao" na barra superior</li>
+        <li>Selecione a versao que voce importou</li>
+        <li>Pronto! Agora voce pode ler a Biblia</li>
+        </ol>
+        
+        <h3>Versoes Populares</h3>
+        <ul>
+        <li><b>ARA</b> - Almeida Revisada Atualizada</li>
+        <li><b>ACF</b> - Almeida Corrigida Fiel</li>
+        <li><b>NVI</b> - Nova Versao Internacional</li>
+        <li><b>CNBB</b> - Biblia CNBB</li>
+        <li><b>NTLH</b> - Nova Traducao na Linguagem de Hoje</li>
+        </ul>
+        
+        <h3>Formatos Suportados</h3>
+        <ul>
+        <li><b>.SQLite3</b> - Formato padrao</li>
+        <li><b>.spb</b> - Formato The SWORD Project</li>
+        </ul>
+        
+        <p><b>Dica:</b> Arquivos .zip precisam ser extraidos primeiro!</p>
+        """
+        msg = QMessageBox()
+        msg.setWindowTitle("Ajuda - Como Baixar Versoes")
+        msg.setTextFormat(Qt.RichText)
+        msg.setText(help_text)
+        msg.setOpenExternalLinks(True)
+        msg.exec_()
+
     def _show_about(self):
         """Mostra janela Sobre"""
         about_text = """
@@ -854,7 +926,9 @@ class BibleReader(QMainWindow):
         <p><b>Desenvolvido por:</b><br>
         Elizeu Barbosa</p>
         <p><b>Site:</b><br>
-        <a href="https://www.elizebarbosa.com.br">www.elizebarbosa.com.br</a></p>
+        <a href="https://elizeubarbosa.com.br/">elizeubarbosa.com.br</a></p>
+        <p><b>Blog:</b><br>
+        <a href="https://sofagospel.blogspot.com/">sofagospel.blogspot.com</a></p>
         <hr>
         <p><b>Funcionalidades:</b></p>
         <ul>
