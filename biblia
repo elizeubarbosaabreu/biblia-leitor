@@ -2,25 +2,36 @@
 # -*- coding: utf-8 -*-
 """
 Bíblia - Leitor de Bíblia com interface de livro
-Suporta versões SQLite3 e SPB do app net.lugsole.bible_gui
+Suporta versões SQLite3 e SPB
 """
 
 import sys
 import os
 import json
+import re
 import sqlite3
+import shutil
 from pathlib import Path
+
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QLabel, QComboBox, QScrollArea, QTextEdit,
-    QMessageBox, QSplitter, QFrame, QFontComboBox, QSpinBox
+    QMessageBox, QSplitter, QFrame, QFontComboBox, QSpinBox,
+    QFileDialog
 )
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont, QColor, QTextCharFormat, QTextCursor
+from PyQt5.QtGui import QFont, QColor, QTextCharFormat, QTextCursor, QIcon
 
-# Caminhos
-BIBLE_DATA_DIR = Path.home() / ".var/app/net.lugsole.bible_gui/data/net.lugsole.bible_gui/translations"
-HIGHLIGHTS_FILE = Path.home() / ".local/share/biblia_highlights.json"
+# Caminhos cross-platform
+if sys.platform == 'win32':
+    BIBLE_DATA_DIR = Path(os.environ.get('APPDATA', Path.home())) / 'xiphos' / 'translations'
+    HIGHLIGHTS_FILE = Path(os.environ.get('APPDATA', Path.home())) / 'xiphos' / 'highlights.json'
+elif sys.platform == 'darwin':
+    BIBLE_DATA_DIR = Path.home() / 'Library' / 'Application Support' / 'xiphos' / 'translations'
+    HIGHLIGHTS_FILE = Path.home() / 'Library' / 'Application Support' / 'xiphos' / 'highlights.json'
+else:
+    BIBLE_DATA_DIR = Path.home() / '.local' / 'share' / 'xiphos' / 'translations'
+    HIGHLIGHTS_FILE = Path.home() / '.local' / 'share' / 'xiphos' / 'highlights.json'
 
 # Nomes dos livros em português
 BOOK_NAMES_PT = {
@@ -50,6 +61,7 @@ class BibleLoader:
 
     def _load_versions(self):
         if not BIBLE_DATA_DIR.exists():
+            BIBLE_DATA_DIR.mkdir(parents=True, exist_ok=True)
             return
 
         for file_path in BIBLE_DATA_DIR.iterdir():
@@ -59,6 +71,34 @@ class BibleLoader:
             elif file_path.suffix == '.spb':
                 name = file_path.stem
                 self.versions[name] = {'type': 'spb', 'path': file_path}
+
+    def reload_versions(self):
+        self.versions.clear()
+        self._load_versions()
+
+    def import_version(self, source_path):
+        source = Path(source_path)
+        if not source.exists():
+            return False, "Arquivo não encontrado"
+
+        if source.suffix not in ('.SQLite3', '.spb', '.sqlite', '.db'):
+            return False, f"Formato não suportado: {source.suffix}"
+
+        BIBLE_DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+        if source.suffix == '.sqlite' or source.suffix == '.db':
+            dest_name = source.stem + '.SQLite3'
+        else:
+            dest_name = source.name
+
+        dest_path = BIBLE_DATA_DIR / dest_name
+
+        if dest_path.exists():
+            return False, f"Versão '{dest_name}' já existe"
+
+        shutil.copy2(source, dest_path)
+        self.reload_versions()
+        return True, f"Importada: {dest_name}"
 
     def get_version_names(self):
         return sorted(self.versions.keys())
@@ -78,11 +118,9 @@ class BibleLoader:
         conn = sqlite3.connect(str(path))
         cursor = conn.cursor()
 
-        # Obter informações
         cursor.execute("SELECT * FROM info")
         info = dict(cursor.fetchall())
 
-        # Obter livros
         cursor.execute("SELECT * FROM books")
         books_raw = cursor.fetchall()
 
@@ -96,7 +134,6 @@ class BibleLoader:
                 'color': color
             }
 
-        # Obter versículos
         cursor.execute("SELECT * FROM verses")
         verses_raw = cursor.fetchall()
 
@@ -120,14 +157,12 @@ class BibleLoader:
         with open(path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
 
-        # Parse header
         title = "Desconhecida"
         for line in lines[:10]:
             if line.startswith('##Title:'):
                 title = line.split('\t')[1].strip() if '\t' in line else line[8:].strip()
                 break
 
-        # Parse livros
         books = {}
         verse_start = 0
         for i, line in enumerate(lines):
@@ -143,13 +178,12 @@ class BibleLoader:
                     book_name = parts[1]
                     num_chapters = int(parts[2])
                     books[book_num] = {
-                        'name': book_name,
+                        'name': BOOK_NAMES_PT.get(book_num, book_name),
                         'chapters': num_chapters
                     }
                 except (ValueError, IndexError):
                     continue
 
-        # Parse versículos
         verses = {}
         for line in lines[verse_start:]:
             line = line.strip()
@@ -205,10 +239,8 @@ class HighlightManager:
         if key not in self.highlights:
             self.highlights[key] = []
 
-        # Remover highlight existente para este versículo
         self.highlights[key] = [h for h in self.highlights[key] if h['verse'] != verse]
 
-        # Adicionar novo highlight
         self.highlights[key].append({
             'verse': verse,
             'color': color
@@ -241,6 +273,11 @@ class BibleReader(QMainWindow):
         self.setWindowTitle("Bíblia Sagrada")
         self.setMinimumSize(900, 700)
 
+        # Ícone
+        icon_path = Path.home() / '.local' / 'share' / 'biblia.png'
+        if icon_path.exists():
+            self.setWindowIcon(QIcon(str(icon_path)))
+
         self.loader = BibleLoader()
         self.highlight_manager = HighlightManager()
 
@@ -269,6 +306,12 @@ class BibleReader(QMainWindow):
         self.version_combo.setMinimumWidth(200)
         self.version_combo.currentTextChanged.connect(self._on_version_changed)
         top_bar.addWidget(self.version_combo)
+
+        # Botão importar
+        import_btn = QPushButton("📥 Importar")
+        import_btn.setStyleSheet("background-color: #4682B4; color: white; padding: 5px 10px;")
+        import_btn.clicked.connect(self._import_version)
+        top_bar.addWidget(import_btn)
 
         # Livro
         top_bar.addWidget(QLabel("Livro:"))
@@ -404,6 +447,22 @@ class BibleReader(QMainWindow):
         if names:
             self.version_combo.setCurrentIndex(0)
 
+    def _import_version(self):
+        file_dialog = QFileDialog()
+        file_dialog.setFileMode(QFileDialog.ExistingFile)
+        file_dialog.setNameFilter("Bíblia (*.SQLite3 *.spb *.sqlite *.db);;Todos (*)")
+
+        if file_dialog.exec_():
+            files = file_dialog.selectedFiles()
+            if files:
+                success, message = self.loader.import_version(files[0])
+                if success:
+                    self.version_combo.clear()
+                    self._load_versions()
+                    QMessageBox.information(self, "Sucesso", message)
+                else:
+                    QMessageBox.warning(self, "Erro", message)
+
     def _on_version_changed(self, version_name):
         if not version_name:
             return
@@ -477,13 +536,11 @@ class BibleReader(QMainWindow):
         if not self.current_data or not self.current_book:
             return
 
-        # Título
         book_name = self.current_data['books'].get(
             self.current_book, {}
         ).get('name', BOOK_NAMES_PT.get(self.current_book, ''))
         self.chapter_title.setText(f"{book_name} {self.current_chapter}")
 
-        # Texto
         self.text_display.clear()
         key = (self.current_book, self.current_chapter)
 
@@ -500,34 +557,32 @@ class BibleReader(QMainWindow):
         cursor = self.text_display.textCursor()
 
         for verse_num in sorted(chapter_verses.keys()):
-            text = chapter_verses[verse_num]
+            text = self._clean_text(chapter_verses[verse_num])
 
-            # Formato do versículo
             verse_format = QTextCharFormat()
             if verse_num in highlight_map:
                 verse_format.setBackground(QColor(highlight_map[verse_num]))
 
-            # Número do versículo (em negrito e cor)
             num_format = QTextCharFormat()
             num_format.setFontWeight(QFont.Bold)
             num_format.setForeground(QColor("#8B4513"))
             cursor.insertText(f" {verse_num} ", num_format)
 
-            # Texto do versículo
             cursor.insertText(f"{text}", verse_format)
 
-            # Quebra de linha após cada versículo
             cursor.insertBlock()
 
-        # Atualizar posição
         self.position_label.setText(
             f"{book_name} {self.current_chapter}:{self.current_verse}"
         )
 
+    def _clean_text(self, text):
+        """Remove tags HTML como <pb/> do texto"""
+        text = re.sub(r'<[^>]+>', '', text)
+        return text.strip()
+
     def _scroll_to_verse(self, verse):
-        # Encontrar posição do versículo e fazer scroll
         text = self.text_display.toPlainText()
-        # Simplificado - apenas atualiza o indicador
         book_name = self.current_data['books'].get(
             self.current_book, {}
         ).get('name', BOOK_NAMES_PT.get(self.current_book, ''))
@@ -579,7 +634,7 @@ class BibleReader(QMainWindow):
             self.current_book, {}
         ).get('name', BOOK_NAMES_PT.get(self.current_book, ''))
 
-        verse_text = chapter_verses[self.current_verse]
+        verse_text = self._clean_text(chapter_verses[self.current_verse])
         reference = f"{book_name} {self.current_chapter}:{self.current_verse}"
         full_text = f"{reference} - {verse_text}"
 
@@ -617,7 +672,6 @@ class BibleReader(QMainWindow):
 def main():
     app = QApplication(sys.argv)
 
-    # Estilo global
     app.setStyleSheet("""
         QMainWindow {
             background-color: #F5F5DC;

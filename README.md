@@ -4,7 +4,7 @@ Um leitor de Bíblia elegante com interface de livro, texto grande e sistema de 
 
 ![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Platform](https://img.shields.io/badge/Platform-Linux-orange?logo=linux&logoColor=white)
+![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20macOS-orange)
 
 ---
 
@@ -17,23 +17,36 @@ Um leitor de Bíblia elegante com interface de livro, texto grande e sistema de 
 - **Suporte a múltiplas versões** bíblicas
 - **Salva suas marcações** automaticamente
 - **Tamanho de fonte ajustável** (12pt a 36pt)
+- **Importar versões** - botão para importar arquivos .SQLite3 e .spb
+- **Cross-platform** - Linux, Windows e macOS
 
 ---
 
 ## Versões Suportadas
 
-O aplicativo lê automaticamente as versões instaladas pelo **Bible GUI** (net.lugsole.bible_gui):
+O aplicativo aceita arquivos nos formatos **SQLite3** e **SPB**.
+
+### Onde baixar versões gratuitas
+
+| Fonte | URL | Formatos |
+|-------|-----|----------|
+| **The SWORD Project** | https://www.crosswire.org/sword/modules/ModDisp.jsp?modType=Bibles | ZIP (extrair .txt) |
+| **Bible SuperSearch** | https://biblesupersearch.com/download | SQLite3 |
+| **Xiphos** (desktop) | https://xiphos.org | .spbb, .zip |
+| **E-Sword** | https://e-sword.net | .bbk (converter) |
+| **BibleGateway** | https://www.biblegateway.com/versions/ | Texto para copiar |
+| **YouVersion** | https://www.bible.com/ | App mobile |
+
+### Versões populares em português
 
 | Versão | Formato | Descrição |
 |--------|---------|-----------|
-| CNBB | SQLite3 | Bíblia CNBB (Nova Capa), 2002 |
-| JFA+ | SQLite3 | João Ferreira de Almeida com Strong |
+| ARA | SPB | Almeida Revisada Atualizada |
+| ACF | SPB | Almeida Corrigida Fiel |
+| NVI | SQLite3 | Nova Versão Internacional |
+| CNBB | SQLite3 | Bíblia CNBB (Nova Capa) |
 | NTLH | SQLite3 | Nova Tradução na Linguagem de Hoje |
-| PorAR | SPB | Bíblia Almeida Recebida |
-| PorCapNT | SPB | Bíblia dos Capuchinhos (NT) |
-| PorLivre | SPB | Bíblia Livre |
-| Portuguese_AlmeidaAtualizada | SPB | Almeida Atualizada |
-| Portuguese_AlmeidaCorrigida | SPB | Almeida Corrigida |
+| KJV | SPB | King James Version (inglês) |
 
 ---
 
@@ -41,7 +54,6 @@ O aplicativo lê automaticamente as versões instaladas pelo **Bible GUI** (net.
 
 - **Python 3.8** ou superior
 - **PyQt5** (interface gráfica)
-- **Bible GUI** instalado via Flatpak (para as versões bíblicas)
 
 ### Instalar dependências
 
@@ -54,6 +66,9 @@ sudo dnf install python3-qt5
 
 # Arch Linux
 sudo pacman -S python-pyqt5
+
+# Windows/macOS
+pip install PyQt5
 ```
 
 ---
@@ -65,8 +80,9 @@ sudo pacman -S python-pyqt5
 Copie e cole o comando abaixo no seu terminal:
 
 ```bash
+# Linux
 mkdir -p ~/.local/bin && \
-curl -sL https://raw.githubusercontent.com/elizeubarbosaabreu/biblia-leitor/main/biblia -o ~/.local/bin/biblia && \
+curl -sL https://raw.githubusercontent.com/elizeubarbosaabreu/biblia-leitor/master/biblia -o ~/.local/bin/biblia && \
 chmod +x ~/.local/bin/biblia && \
 echo "Instalado com sucesso! Execute: biblia"
 ```
@@ -94,17 +110,33 @@ cp biblia ~/.local/bin/
 biblia
 ```
 
-Ou crie um atalho no menu do sistema criando o arquivo `~/.local/share/applications/biblia.desktop`:
+### Importar versões bíblicas
+
+1. Clique no botão **"📥 Importar"** na barra superior
+2. Selecione um arquivo `.SQLite3` ou `.spb`
+3. A versão será copiada para o diretório de dados e ficará disponível
+
+### Localização dos dados
+
+| Sistema | Caminho |
+|---------|---------|
+| **Linux** | `~/.local/share/xiphos/translations/` |
+| **Windows** | `%APPDATA%/xiphos/translations/` |
+| **macOS** | `~/Library/Application Support/xiphos/translations/` |
+
+### Atalho no menu do sistema
+
+Crie o arquivo `~/.local/share/applications/biblia.desktop`:
 
 ```ini
 [Desktop Entry]
 Name=Bíblia Sagrada
 Comment=Leitor de Bíblia com interface de livro
 Exec=biblia
-Icon=accessories-dictionary
+Icon=biblia
 Terminal=false
 Type=Application
-Categories=Utility;Education;
+Categories=Utility;Education;Religion;
 Keywords=biblia;bible;leitor;reader;
 ```
 
@@ -143,21 +175,14 @@ Keywords=biblia;bible;leitor;reader;
 
 ---
 
-## Localização dos dados
-
-- **Versões bíblicas**: `~/.var/app/net.lugsole.bible_gui/data/net.lugsole.bible_gui/translations/`
-- **Marcações salvas**: `~/.local/share/biblia_highlights.json`
-
----
-
 ## Estrutura do projeto
 
 ```
 biblia-leitor/
 ├── biblia              # Aplicativo principal (executável Python)
+├── biblia.png          # Ícone do aplicativo
 ├── README.md           # Este arquivo
-├── LICENSE             # Licença MIT
-└── screenshots/        # Capturas de tela
+└── LICENSE             # Licença MIT
 ```
 
 ---
@@ -166,15 +191,7 @@ biblia-leitor/
 
 ### "Não encontra as versões bíblicas"
 
-Verifique se o Bible GUI está instalado:
-```bash
-flatpak list | grep bible
-```
-
-Se não estiver, instale:
-```bash
-flatpak install flathub net.lugsole.bible_gui
-```
+Clique no botão **"📥 Importar"** e selecione um arquivo `.SQLite3` ou `.spb`.
 
 ### "Erro: PyQt5 não encontrado"
 
@@ -220,7 +237,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para de
 ## Créditos
 
 - Desenvolvido com Python e PyQt5
-- Compatível com as versões do [Bible GUI](https://flathub.org/apps/net.lugsole.bible_gui)
+- Formatos suportados: SQLite3 e SPB (The SWORD Project)
 
 ---
 
