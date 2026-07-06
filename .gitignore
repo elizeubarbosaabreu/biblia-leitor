@@ -3,3 +3,6 @@ builddir/
 __pycache__/
 biblia-leitor
 flatpak-wheels/
+AppDir/
+*.spec
+*.AppImage

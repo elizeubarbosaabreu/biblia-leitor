@@ -25,7 +25,23 @@ Um leitor de Bíblia elegante com interface de livro, texto grande e sistema de 
 
 ## Instalação
 
-### Opção 1: Executar via Python (Recomendado)
+### Opção 1: Flatpak (Recomendado no Linux)
+
+```bash
+# Instalar o Flatpak se não tiver
+sudo apt install flatpak
+
+# Adicionar o Flathub (opcional)
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+# Instalar o aplicativo
+flatpak install com.github.elizeubarbosaabreu.BibliaSacra
+
+# Executar
+flatpak run com.github.elizeubarbosaabreu.BibliaSacra
+```
+
+### Opção 2: Executar via Python
 
 ```bash
 # Clonar o repositório
@@ -37,19 +53,6 @@ pip install -r requirements.txt
 
 # Executar
 python biblia.py
-```
-
-### Opção 2: Executar como script
-
-```bash
-# Baixar o script
-wget https://raw.githubusercontent.com/elizeubarbosaabreu/biblia-leitor/master/biblia.py
-
-# Tornar executável
-chmod +x biblia.py
-
-# Executar
-./biblia.py
 ```
 
 ### Dependências
