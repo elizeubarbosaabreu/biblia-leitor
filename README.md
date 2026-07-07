@@ -28,14 +28,12 @@ Um leitor de Bíblia elegante com interface de livro, texto grande e sistema de 
 ### Opção 1: Flatpak (Recomendado no Linux)
 
 ```bash
-# Instalar o Flatpak se não tiver
-sudo apt install flatpak
+# Clonar o repositório
+git clone https://github.com/elizeubarbosaabreu/biblia-leitor.git
+cd biblia-leitor
 
-# Adicionar o Flathub (opcional)
-flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-
-# Instalar o aplicativo
-flatpak install com.github.elizeubarbosaabreu.BibliaSacra
+# Construir e instalar
+./build-flatpak.sh
 
 # Executar
 flatpak run com.github.elizeubarbosaabreu.BibliaSacra
