@@ -1,8 +1,10 @@
 {
     "app-id": "com.github.elizeubarbosaabreu.BibliaSacra",
     "runtime": "org.kde.Platform",
-    "runtime-version": "5.15-23.08",
+    "runtime-version": "5.15-24.08",
     "sdk": "org.kde.Sdk",
+    "base": "com.riverbankcomputing.PyQt.BaseApp",
+    "base-version": "5.15-24.08",
     "command": "biblia",
     "finish-args": [
         "--share=ipc",
@@ -14,27 +16,6 @@
     ],
     "modules": [
         {
-            "name": "python3-pyqt5",
-            "buildsystem": "simple",
-            "build-commands": [
-                "pip3 install --no-index --find-links=/run/build/python3-pyqt5 --prefix=${FLATPAK_DEST} PyQt5==5.15.11 PyQt5-sip==12.18.0 PyQt5-Qt5==5.15.19"
-            ],
-            "sources": [
-                {
-                    "type": "file",
-                    "path": "flatpak-wheels/PyQt5-5.15.11-cp38-abi3-manylinux_2_17_x86_64.whl"
-                },
-                {
-                    "type": "file",
-                    "path": "flatpak-wheels/pyqt5_sip-12.18.0-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.whl"
-                },
-                {
-                    "type": "file",
-                    "path": "flatpak-wheels/pyqt5_qt5-5.15.19-py3-none-manylinux2014_x86_64.whl"
-                }
-            ]
-        },
-        {
             "name": "biblia",
             "buildsystem": "simple",
             "build-commands": [
@@ -45,8 +26,8 @@
             ],
             "sources": [
                 {
-                    "type": "dir",
-                    "path": "."
+                    "type": "archive",
+                    "url": "https://github.com/elizeubarbosaabreu/biblia-leitor/archive/v2.3.tar.gz"
                 }
             ]
         }

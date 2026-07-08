@@ -30,6 +30,16 @@
   </developer>
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="2.3" date="2026-07-07">
+      <description>
+        <p>Flatpak disponível no Flathub.</p>
+      </description>
+    </release>
+    <release version="2.2" date="2026-07-06">
+      <description>
+        <p>Melhorias e correções.</p>
+      </description>
+    </release>
     <release version="2.1" date="2026-07-05">
       <description>
         <p>Suporte ao esquema SQLite OpenLP do repositório biblias.</p>

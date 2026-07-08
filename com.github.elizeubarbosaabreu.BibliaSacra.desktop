@@ -5,5 +5,6 @@ Exec=biblia
 Icon=com.github.elizeubarbosaabreu.BibliaSacra
 Terminal=false
 Type=Application
-Categories=Utility;Education;
+Categories=Education;
+StartupNotify=true
 Keywords=biblia;bible;leitor;reader;
