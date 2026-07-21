@@ -21,7 +21,8 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QLabel, QComboBox, QScrollArea, QTextEdit,
     QMessageBox, QSplitter, QFrame, QFontComboBox, QSpinBox,
-    QFileDialog, QAction, QMenuBar, QMenu, QToolBar, QStatusBar
+    QFileDialog, QAction, QMenuBar, QMenu, QToolBar, QStatusBar,
+    QLineEdit
 )
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QFont, QColor, QTextCharFormat, QTextCursor, QIcon
@@ -379,6 +380,8 @@ class BibleReader(QMainWindow):
         self.current_chapter = 1
         self.current_verse = 1
         self.font_size = 18
+        self.search_results = []
+        self.search_current_index = -1
 
         self._setup_ui()
         self._load_versions()
@@ -440,6 +443,32 @@ class BibleReader(QMainWindow):
         self.font_size_spin.setValue(self.font_size)
         self.font_size_spin.valueChanged.connect(self._on_font_size_changed)
         toolbar.addWidget(self.font_size_spin)
+
+        # Busca
+        toolbar.addWidget(QLabel("Buscar:"))
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("Palavra ou frase (regex)...")
+        self.search_input.setMinimumWidth(180)
+        self.search_input.returnPressed.connect(self._search_text)
+        toolbar.addWidget(self.search_input)
+
+        self.search_prev_btn = QPushButton("▲")
+        self.search_prev_btn.setToolTip("Anterior")
+        self.search_prev_btn.clicked.connect(self._search_prev)
+        toolbar.addWidget(self.search_prev_btn)
+
+        self.search_next_btn = QPushButton("▼")
+        self.search_next_btn.setToolTip("Próximo")
+        self.search_next_btn.clicked.connect(self._search_next)
+        toolbar.addWidget(self.search_next_btn)
+
+        self.search_count_label = QLabel("")
+        toolbar.addWidget(self.search_count_label)
+
+        self.clear_search_btn = QPushButton("✕")
+        self.clear_search_btn.setToolTip("Limpar busca")
+        self.clear_search_btn.clicked.connect(self._clear_search)
+        toolbar.addWidget(self.clear_search_btn)
 
         toolbar.addStretch()
 
@@ -657,6 +686,7 @@ class BibleReader(QMainWindow):
             self._update_chapter_range()
             self.current_chapter = 1
             self.chapter_spin.setValue(1)
+            self._clear_search()
             self._display_chapter()
 
     def _update_chapter_range(self):
@@ -675,6 +705,7 @@ class BibleReader(QMainWindow):
             return
         self.current_chapter = chapter
         self._update_verse_range()
+        self._clear_search()
         self._display_chapter()
 
     def _update_verse_range(self):
@@ -696,7 +727,144 @@ class BibleReader(QMainWindow):
         self.font_size = size
         self.text_display.setFont(QFont("Serif", size))
 
-    def _display_chapter(self):
+    def _search_text(self):
+        if not self.current_data:
+            return
+
+        pattern = self.search_input.text()
+        if not pattern:
+            return
+
+        try:
+            re.compile(pattern)
+            use_regex = True
+        except re.error:
+            use_regex = False
+
+        self.search_results = []
+
+        for (book, chapter), chapter_verses in self.current_data['verses'].items():
+            for verse_num in sorted(chapter_verses.keys()):
+                text = self._clean_text(chapter_verses[verse_num])
+                if use_regex:
+                    matches = list(re.finditer(pattern, text, re.IGNORECASE))
+                else:
+                    matches = []
+                    idx = text.lower().find(pattern.lower())
+                    while idx != -1:
+                        matches.append((idx, idx + len(pattern)))
+                        idx = text.lower().find(pattern.lower(), idx + 1)
+
+                if use_regex:
+                    for m in matches:
+                        self.search_results.append((book, chapter, verse_num, m.start(), m.end()))
+                else:
+                    for start_pos, end_pos in matches:
+                        self.search_results.append((book, chapter, verse_num, start_pos, end_pos))
+
+        self.search_current_index = -1 if not self.search_results else 0
+        self._update_search_display()
+        if self.search_results:
+            self._go_to_search_result()
+
+    def _update_search_display(self):
+        total = len(self.search_results)
+        if total == 0:
+            self.search_count_label.setText("0/0")
+            self.statusBar().showMessage(
+                f"Nenhum resultado para \"{self.search_input.text()}\"", 3000
+            )
+        else:
+            self.search_count_label.setText(
+                f"{self.search_current_index + 1}/{total}"
+            )
+            self.statusBar().showMessage(
+                f"{total} resultado(s) encontrado(s)", 3000
+            )
+
+    def _go_to_search_result(self):
+        if self.search_current_index < 0 or self.search_current_index >= len(self.search_results):
+            return
+
+        book, chapter, verse_num, start, end = self.search_results[self.search_current_index]
+
+        book_idx = self.book_combo.findData(book)
+        if book_idx >= 0:
+            self.book_combo.blockSignals(True)
+            self.book_combo.setCurrentIndex(book_idx)
+            self.book_combo.blockSignals(False)
+        self.current_book = book
+        self._update_chapter_range()
+        self.chapter_spin.blockSignals(True)
+        self.chapter_spin.setValue(chapter)
+        self.chapter_spin.blockSignals(False)
+        self.current_chapter = chapter
+        self._update_verse_range()
+        self.verse_spin.blockSignals(True)
+        self.verse_spin.setValue(verse_num)
+        self.verse_spin.blockSignals(False)
+
+        self._display_chapter(keep_search=True)
+        self._scroll_to_in_chapter(verse_num, start, end)
+
+    def _search_next(self):
+        if not self.search_results:
+            return
+        self.search_current_index = (self.search_current_index + 1) % len(self.search_results)
+        self._update_search_display()
+        self._go_to_search_result()
+
+    def _search_prev(self):
+        if not self.search_results:
+            return
+        self.search_current_index = (self.search_current_index - 1) % len(self.search_results)
+        self._update_search_display()
+        self._go_to_search_result()
+
+    def _scroll_to_in_chapter(self, verse_num, start, end):
+        text_edit = self.text_display
+        plain = text_edit.toPlainText()
+
+        verse_pos = plain.find(f" {verse_num} ")
+        if verse_pos == -1:
+            return
+
+        cursor = text_edit.textCursor()
+        cursor.movePosition(cursor.Start)
+
+        char_count = 0
+        doc = text_edit.document()
+        block = doc.begin()
+        found = False
+        while block.isValid():
+            block_text = block.text()
+            if char_count + len(block_text) >= verse_pos + end:
+                cursor.setPosition(block.position() + (verse_pos - char_count) + start)
+                cursor.movePosition(
+                    cursor.Right, cursor.KeepAnchor, end - start
+                )
+                text_edit.setTextCursor(cursor)
+                text_edit.ensureCursorVisible()
+                found = True
+                break
+            char_count += len(block_text) + 1
+            block = block.next()
+
+        if not found:
+            cursor = text_edit.textCursor()
+            cursor.movePosition(cursor.Start)
+            text_edit.setTextCursor(cursor)
+            text_edit.ensureCursorVisible()
+
+    def _clear_search(self):
+        self.search_input.clear()
+        self.search_results = []
+        self.search_current_index = -1
+        self.search_count_label.setText("")
+        if self.current_data:
+            self._display_chapter(keep_search=False)
+
+    def _display_chapter(self, keep_search=False):
         if not self.current_data or not self.current_book:
             return
 
@@ -720,25 +888,60 @@ class BibleReader(QMainWindow):
 
         cursor = self.text_display.textCursor()
 
+        search_hits = {}
+        if keep_search and self.search_results:
+            for result in self.search_results:
+                b, c, verse_num, s, e = result
+                if b == self.current_book and c == self.current_chapter:
+                    search_hits.setdefault(verse_num, []).append((s, e))
+
         for verse_num in sorted(chapter_verses.keys()):
             text = self._clean_text(chapter_verses[verse_num])
-
-            verse_format = QTextCharFormat()
-            if verse_num in highlight_map:
-                verse_format.setBackground(QColor(highlight_map[verse_num]))
 
             num_format = QTextCharFormat()
             num_format.setFontWeight(QFont.Bold)
             num_format.setForeground(QColor("#8B4513"))
             cursor.insertText(f" {verse_num} ", num_format)
 
-            cursor.insertText(f"{text}", verse_format)
+            if keep_search and verse_num in search_hits:
+                self._insert_text_with_highlights(
+                    cursor, text, highlight_map.get(verse_num),
+                    search_hits[verse_num]
+                )
+            else:
+                verse_format = QTextCharFormat()
+                if verse_num in highlight_map:
+                    verse_format.setBackground(QColor(highlight_map[verse_num]))
+                cursor.insertText(f"{text}", verse_format)
 
             cursor.insertBlock()
 
         self.position_label.setText(
             f"{book_name} {self.current_chapter}:{self.current_verse}"
         )
+
+    def _insert_text_with_highlights(self, cursor, text, highlight_color, hit_positions):
+        """Insere texto com destaques de busca e marcação de fundo"""
+        last_end = 0
+        for start, end in sorted(hit_positions):
+            if start > last_end:
+                fmt = QTextCharFormat()
+                if highlight_color:
+                    fmt.setBackground(QColor(highlight_color))
+                cursor.insertText(text[last_end:start], fmt)
+
+            match_fmt = QTextCharFormat()
+            match_fmt.setBackground(QColor("#FFFF00"))
+            match_fmt.setForeground(QColor("#000000"))
+            cursor.insertText(text[start:end], match_fmt)
+
+            last_end = end
+
+        if last_end < len(text):
+            fmt = QTextCharFormat()
+            if highlight_color:
+                fmt.setBackground(QColor(highlight_color))
+            cursor.insertText(text[last_end:], fmt)
 
     def _clean_text(self, text):
         """Remove tags HTML como <pb/> do texto"""

@@ -25,7 +25,22 @@ Um leitor de Bíblia elegante com interface de livro, texto grande e sistema de 
 
 ## Instalação
 
-### Opção 1: Executar via Python
+### Opção 1: Instalação via script (Linux)
+
+```bash
+git clone https://github.com/elizeubarbosaabreu/biblia-leitor.git
+cd biblia-leitor
+chmod +x instalar.sh
+./instalar.sh
+```
+
+O script cria um ambiente virtual, instala as dependências, configura o ícone e o atalho no menu de aplicativos. Após a instalação, execute com:
+
+```bash
+biblia
+```
+
+### Opção 2: Executar via Python
 
 ```bash
 # Clonar o repositório
