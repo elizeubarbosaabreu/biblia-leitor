@@ -34,11 +34,21 @@ chmod +x instalar.sh
 ./instalar.sh
 ```
 
-O script cria um ambiente virtual, instala as dependências, configura o ícone e o atalho no menu de aplicativos. Após a instalação, execute com:
+O script automatiza toda a instalação:
+
+1. Cria um ambiente virtual em `~/.local/share/geradores_de_videos/`
+2. Instala o PyQt5 nesse ambiente virtual (se ainda não estiver instalado)
+3. Copia o executável para `~/.local/bin/biblia`
+4. Copia o ícone e cria o atalho no menu de aplicativos
+5. Adiciona `~/.local/bin` ao PATH no `~/.bashrc` (se necessário)
+
+Após a instalação, execute com:
 
 ```bash
 biblia
 ```
+
+**Nota:** Em conexões lentas, o download do PyQt5 pode demorar. O script já usa `--timeout` e `--retries` no pip para evitar falhas de rede; se o download for interrompido, basta rodar `./instalar.sh` novamente, pois ele retoma de onde parou.
 
 ### Opção 2: Executar via Python
 
@@ -46,6 +56,10 @@ biblia
 # Clonar o repositório
 git clone https://github.com/elizeubarbosaabreu/biblia-leitor.git
 cd biblia-leitor
+
+# Criar ambiente virtual (recomendado)
+python3 -m venv venv
+source venv/bin/activate
 
 # Instalar dependências
 pip install -r requirements.txt
@@ -155,6 +169,14 @@ pip install PyQt5
 # ou
 sudo apt install python3-pyqt5
 ```
+
+### "Erro ao executar o instalador (pip: Arquivo ou diretório inexistente)"
+
+O ambiente virtual ainda não foi criado. Rode novamente `./instalar.sh` com a versão mais recente do script, que cria o venv automaticamente em `~/.local/share/geradores_de_videos/`.
+
+### "Download do PyQt5 interrompido durante a instalação"
+
+O PyQt5 é um pacote grande. Em conexões lentas, o download pode demorar ou falhar. Basta executar `./instalar.sh` novamente — o pip retoma o download de onde parou.
 
 ### "Permissão negada ao executar"
 
