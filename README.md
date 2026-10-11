@@ -19,6 +19,7 @@ Um leitor de Bíblia elegante com interface de livro, texto grande e sistema de 
 - **Tamanho de fonte ajustável** (12pt a 36pt)
 - **Importar versões** - menu para importar arquivos .SQLite3 e .spb
 - **Copiar com citação** - formato: 'Texto' (Abbr. Cap:V, Versão)
+- **Versículos clicáveis** - clique em um versículo para selecioná-lo e aplicá-lo às ações (marcação, cópia, navegação)
 - **Cross-platform** - Linux, Windows e macOS
 
 ---
@@ -36,7 +37,7 @@ chmod +x instalar.sh
 
 O script automatiza toda a instalação:
 
-1. Cria um ambiente virtual em `~/.local/share/geradores_de_videos/`
+1. Cria um ambiente virtual em `~/.local/share/biblia-venv/`
 2. Instala o PyQt5 nesse ambiente virtual (se ainda não estiver instalado)
 3. Copia o executável para `~/.local/bin/biblia`
 4. Copia o ícone e cria o atalho no menu de aplicativos
@@ -172,7 +173,7 @@ sudo apt install python3-pyqt5
 
 ### "Erro ao executar o instalador (pip: Arquivo ou diretório inexistente)"
 
-O ambiente virtual ainda não foi criado. Rode novamente `./instalar.sh` com a versão mais recente do script, que cria o venv automaticamente em `~/.local/share/geradores_de_videos/`.
+O ambiente virtual ainda não foi criado. Rode novamente `./instalar.sh` com a versão mais recente do script, que cria o venv automaticamente em `~/.local/share/biblia-venv/`.
 
 ### "Download do PyQt5 interrompido durante a instalação"
 

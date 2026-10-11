@@ -24,7 +24,7 @@ from PyQt5.QtWidgets import (
     QFileDialog, QAction, QMenuBar, QMenu, QToolBar, QStatusBar,
     QLineEdit
 )
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtGui import QFont, QColor, QTextCharFormat, QTextCursor, QIcon
 
 # Caminhos cross-platform
@@ -72,6 +72,57 @@ BOOK_ABBR_PT = {
     56: "Tt", 57: "Fm", 58: "Hb", 59: "Tg", 60: "1Pe",
     61: "2Pe", 62: "1Jo", 63: "2Jo", 64: "3Jo", 65: "Jd", 66: "Ap"
 }
+
+
+class VerseTextEdit(QTextEdit):
+    """QTextEdit somente leitura que detecta cliques em versículos.
+
+    Um clique simples (sem arrastar) seleciona todo o texto do versículo
+    clicado e emite o número do versículo. O arraste continua funcionando
+    para selecionar trechos livres.
+    """
+
+    verse_clicked = pyqtSignal(int)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._press_pos = None
+
+    def mousePressEvent(self, event):
+        self._press_pos = event.pos()
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        super().mouseReleaseEvent(event)
+
+        if event.button() != Qt.LeftButton or self._press_pos is None:
+            return
+
+        moved = (event.pos() - self._press_pos).manhattanLength()
+        self._press_pos = None
+
+        if moved > QApplication.startDragDistance():
+            return
+
+        self._select_verse_at(event.pos())
+
+    def _select_verse_at(self, pos):
+        cursor = self.cursorForPosition(pos)
+        block = cursor.block()
+        text = block.text()
+
+        match = re.match(r'\s*(\d+)\s', text)
+        if not match:
+            return
+
+        verse = int(match.group(1))
+
+        selection = QTextCursor(self.document())
+        selection.setPosition(block.position() + match.end())
+        selection.setPosition(block.position() + len(text), QTextCursor.KeepAnchor)
+        self.setTextCursor(selection)
+
+        self.verse_clicked.emit(verse)
 
 
 class BibleLoader:
@@ -508,8 +559,9 @@ class BibleReader(QMainWindow):
         reader_layout.addWidget(self.chapter_title)
 
         # Texto bíblico
-        self.text_display = QTextEdit()
+        self.text_display = VerseTextEdit()
         self.text_display.setReadOnly(True)
+        self.text_display.verse_clicked.connect(self._on_verse_clicked)
         self.text_display.setFont(QFont("Serif", self.font_size))
         self.text_display.setStyleSheet("""
             QTextEdit {
@@ -721,6 +773,16 @@ class BibleReader(QMainWindow):
         if verse < 1:
             return
         self.current_verse = verse
+        self._scroll_to_verse(verse)
+
+    def _on_verse_clicked(self, verse):
+        """Atualiza o versículo atual ao clicar no texto"""
+        if verse < 1:
+            return
+        self.current_verse = verse
+        self.verse_spin.blockSignals(True)
+        self.verse_spin.setValue(verse)
+        self.verse_spin.blockSignals(False)
         self._scroll_to_verse(verse)
 
     def _on_font_size_changed(self, size):
