@@ -6,7 +6,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-VENV_DIR="$HOME/.local/share/geradores_de_videos"
+VENV_DIR="$HOME/.local/share/biblia-venv"
 BIN_DIR="$HOME/.local/bin"
 ICON_DIR="$HOME/.local/share/icons"
 APP_DIR="$HOME/.local/share/applications"
